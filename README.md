@@ -18,10 +18,10 @@ A project simulating a Bastion host (Jumping server) in AWS using EC2
 
 
 ## 🔧 Starting ##
-1- Create Two diferents VPCs (VPC_1 and VPC_2 both with diferents CIDR);
-  1.2- VPC_1:
+- Create Two diferents VPCs (VPC_1 and VPC_2 both with diferents CIDR);
+  - VPC_1:
     Create Three Subnets: SubNet_A, SubNet_B, SubNet_C;
     Create an ACL for each Subnet (Open the Document ACL_Subnets_beggining.md to see more about the begging configuration)
     Create EC2 instances (Open the Document EC2_Instances.md, to see more about it)
     Create Security Groupes (Open the Document Sg.md, to see more about the configuration)
-  1.3- 
+  - 
