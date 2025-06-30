@@ -1,5 +1,5 @@
 # BastionHost_Project
-A project simulating a Bastion host (Jumping server) in AWS using EC2
+A project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
 
 ## 📐 Architecture ##
 - Two Diferents VPCs (Diferents IPV4 CIDR)
