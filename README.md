@@ -16,7 +16,6 @@ A project simulating a Bastion host (Jumping server) in AWS using EC2
 - VPC Peering
 - ACLs and Security Groups
 
-##
 
 ## 🔧 Starting ##
 1- Create Two diferents VPCs (VPC_1 and VPC_2 both with diferents CIDR);
