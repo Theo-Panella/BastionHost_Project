@@ -1,7 +1,9 @@
 ## 🚀ATTENTION
 - We are talking about ACL (StateLess comunication)
 
-ACL-SubNet_A:
+
+
+## ACL-SubNet_A:
 
 - Input rules:
     
@@ -14,9 +16,9 @@ ACL-SubNet_A:
     - Subnet_B IPV4 CIDR (We are saying Subnet_A can send packages to SubNet_B)
     
 
-################################################################################################
 
-ACL-SubNet_B:
+
+## ACL-SubNet_B:
 
 - Input rules:
     
@@ -26,9 +28,8 @@ ACL-SubNet_B:
     
     - Subnet_A IPV4 CIDR (We are saying Subnet_B can send packages to SubNet_A)
 
-################################################################################################
 
-ACL-SubNet_C:
+## ACL-SubNet_C:
 
 - Input rules:
     
