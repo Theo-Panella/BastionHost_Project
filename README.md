@@ -32,7 +32,7 @@ A project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
 
   - Then you will see a message like this one
     
-          01:52:50 ~ →  ssh -A ec2-user@Bastion_IP_Address
+          00:00:00 ~ →  ssh -A ec2-user@Bastion_IP_Address
            ,     #_
             ~\_  ####_        Amazon Linux 2023
            ~~  \_#####\
@@ -47,10 +47,10 @@ A project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
          [ec2-user@Bastion_IP_Address ~]$
 
 
-  - Now connect to the Server_1 / Instance_1
+  - Now connect to the Server_1 / Instance_1 using the private IP address (We use the private IP because we are in the same VPC as the instance, so don't need to use the public IP)
   - It's important to notice that we already made the one single connection with ssh -A, so our Bastion instance already have the SSH pair key to connect in our Server_1
     
-        ##[ec2-user@Bastion_IP_Address ~]$ ssh ec2-user@Server_IP_Address
+        [ec2-user@Bastion_IP_Address ~]$ ssh ec2-user@Server_IP_Address
          ,     #_
          ~\_  ####_        Amazon Linux 2023
         ~~  \_#####\
@@ -64,9 +64,13 @@ A project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
         Last login: Thu may 10 00:00:00 2000 from Your_Bastion_IP
         [ec2-user@Server_IP_Address ~]$
 
+  - if you made it. Congratulations!! 🎉🎉
+    You made a jump server connection. Now we can take a step foward and test the instance privace
 
-  - Open another terminal and connect to the invader instance using the same command used on Bastion
+    ##
     
+  - Open another terminal and connect to the invader instance using the same command as Bastion
+  - Now that you are alredy connected in all the 
 
   - Create Security Groupes (Open the Document Sg.md, to see more about the configuration)
   - 
