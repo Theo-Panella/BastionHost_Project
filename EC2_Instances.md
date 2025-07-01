@@ -15,7 +15,7 @@
    
 ## 🛡️ Bastion Instance
 - Configurate the OS
-- Use or Create a ssh pair key
+- Use your downloaded ssh pair key
 - ⚠️ Edit net configuration, putting the instance in SubNet_A ⚠️
 - the security groupe just leave the way that is, after we will change it (by default is 0.0.0.0/0 "All comunication")
 
