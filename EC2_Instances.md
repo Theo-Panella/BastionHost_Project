@@ -7,5 +7,5 @@
 - When it download follow the normal steps using: "chmod 400 file.pem" to make it more secure for read
 
 ## Tip
-- My tip is use "ssh -A username@IP_address" to connect
+- My tip is to use "ssh -A username@IP_address" to connect in the Bastion instance
     - Because the -A make a single connection, being more secure, so when you connect to Bastion server and after try to do the "jump" from another machine, you don't need to copy the ssh pair key
