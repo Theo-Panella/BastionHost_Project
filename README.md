@@ -30,9 +30,9 @@ A project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
     
          ssh -A username@Instance_IP_Address
 
-  - Now  we are connected
+  - Then you will see a message like this one
     
-          01:52:50 ~ →  ssh -A ec2-user@IP_Address
+          01:52:50 ~ →  ssh -A ec2-user@Bastion_IP_Address
            ,     #_
             ~\_  ####_        Amazon Linux 2023
            ~~  \_#####\
@@ -44,10 +44,28 @@ A project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
                   _/ _/
                 _/m/'
          Last login: Thu may 10 00:00:00 2000 from Your_Gateway_IP
-         [ec2-user@I_P_Address ~]$
+         [ec2-user@IP_Address ~]$
 
+
+  - Now connect to the Server_1 / Instance_1
+  - It's important to notice that we already made the one single connection with ssh -A, so our Bastion instance already have the SSH pair key to connect in the SubNet_B
     
-  - Open another terminal and connect to the invader instance using the same comand
+        ##[ec2-user@ip-172-31-3-252 ~]$ ssh ec2-user@Server_IP_Address
+         ,     #_
+         ~\_  ####_        Amazon Linux 2023
+        ~~  \_#####\
+        ~~     \###|
+        ~~       \#/ ___   https://aws.amazon.com/linux/amazon-linux-2023
+         ~~       V~' '->
+         ~~~         /
+          ~~._.   _/
+             _/ _/
+           _/m/'
+        Last login: Thu may 10 00:00:00 2000 from Your_Bastion_IP
+        [ec2-user@IP_Address ~]$
+
+
+  - Open another terminal and connect to the invader instance using the same command used on Bastion
     
 
   - Create Security Groupes (Open the Document Sg.md, to see more about the configuration)
