@@ -1,4 +1,4 @@
-## 🚀ATTENTION
+## 🚀 ATTENTION
  We are talking about ACL (StateLess comunication)
 
 
@@ -42,6 +42,6 @@
     - Subnet_B IPV4 CIDR (We are saying Subnet_C can send packages to SubNet_B)
     
     
-## IMPORTANT
+## ⚠️ IMPORTANT ⚠️
 
 Notice the SubNet_C can send and receive packages from SubNet_A, but SubNet_A will not send or receive any of this packages. Because we configurate ACL-SubNet_A to just communicate with SubNet_B
