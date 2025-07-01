@@ -10,5 +10,13 @@
 - My tip is to use "ssh -A username@IP_address" to connect in the Bastion instance
     - Because the -A make a single connection, being more secure, so when you connect to Bastion server and after this
       try to  "jump" from another instance, you don't need to copy the ssh pair key, you just use "ssh username@IP_address"
+- If you had some troubles using "ssh -A", maybe the command is pulling your id_rsa and sending to the instance, to resolve this
+  try "ssh-add file.pem /path/to/id_rsa", then you may be able to connect
+   
+## 🛡️ Bastion Instance
+- Configurate the OS
+- Use or Create a ssh pair key
+- ⚠️ Edit net configuration, putting the instance in SubNet_A ⚠️
+- the security groupe just leave the way that is, after we will change it (by default is 0.0.0.0/0 "All comunication")
 
-## 🗿 Bastion Instance
+## 💻 Instance_1 or Server_1
