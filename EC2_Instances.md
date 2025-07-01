@@ -12,18 +12,22 @@
       try to  "jump" from another instance, you don't need to copy the ssh pair key, you just use "ssh username@IP_address"
 - If you had some troubles using "ssh -A", maybe the command is pulling your id_rsa and sending to the instance, to resolve this
   try "ssh-add file.pem /path/to/id_rsa", then you may be able to connect
-   
-## 🛡️ Bastion Instance
-- Configurate the OS
-- Use your downloaded ssh pair key
-- ⚠️ Edit network configuration, putting the instance in SubNet_A ⚠️
-- The security groupe just leave the way that is, after we will change it (by default is 0.0.0.0/0 "All comunication")
+  
+## A
+
+    ## 🛡️ Bastion Instance
+    - Configurate the OS
+    - Use your downloaded ssh pair key
+    - ⚠️ Edit network configuration, putting the instance in SubNet_A ⚠️
+    - The security groupe just leave the way that is, after we will change it (by default is 0.0.0.0/0 "All comunication")
 
 ## 💻 Instance_1 or Server_1
 - Configurate the OS
 - Use your downloaded ssh pair key
 - ⚠️ Edit network configuration, putting the instance in SubNet_B ⚠️
 - The security groupe just leave the way that is, after we will change it (by default is 0.0.0.0/0 "All comunication")
+
+
 
 ## ☣️ATENTION☣️
 The security groups will be configured after all the other components are set up. By using only ACLs as the security method, we can ensure that the ACLs are working correctly
