@@ -26,3 +26,4 @@
 - The security groupe just leave the way that is, after we will change it (by default is 0.0.0.0/0 "All comunication")
 
 ## ☣️ATENTION☣️
+The security groups will be configured after all the other components are set up. By using only ACLs as the security method, we can ensure that the ACLs are working correctly
