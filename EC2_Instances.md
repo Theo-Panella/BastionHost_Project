@@ -20,3 +20,9 @@
 - The security groupe just leave the way that is, after we will change it (by default is 0.0.0.0/0 "All comunication")
 
 ## 💻 Instance_1 or Server_1
+- Configurate the OS
+- Use your downloaded ssh pair key
+- ⚠️ Edit network configuration, putting the instance in SubNet_B ⚠️
+- The security groupe just leave the way that is, after we will change it (by default is 0.0.0.0/0 "All comunication")
+
+## ☣️ATENTION☣️
