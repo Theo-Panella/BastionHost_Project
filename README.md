@@ -5,9 +5,9 @@ A project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
 - Two Diferents VPCs (Diferents IPV4 CIDR)
 - VPC peering
 - Subnets
-- ACLs for minimun traffic 
+- ACLs for minimum traffic 
 - EC2 Instances 
-- Security Groupes
+- Security Groups
 
 
 ## 🛠️ Technologies and Services ##
@@ -18,11 +18,11 @@ A project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
 
 
 ## 🔧 Configuration ##
-- We will start by doing all the configuration of VPC_1 and testing, after it, we create the VPC_2 and configurate for communication with VPC_1
+- We will start by doing all the configuration of VPC_1 and testing, after it, we create the VPC_2 and configure for communication with VPC_1
 - VPC_1:
   - Create Three Subnets: SubNet_A, SubNet_B, SubNet_C
   - Create an ACL for each Subnet (Open the Document ACL_Subnets_beggining.md to see more about it)
-  - Create EC2 instances (Open the Document EC2_Instances.md, to see more about it)
+  - Create EC2 instances (Open the Document EC2_Instances.md, to see more about the details)
 
   ## 📝 Testing ##
   - Open your terminal
@@ -70,7 +70,24 @@ A project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
     ##
     
   - Open another terminal and connect to the invader instance using the same command as Bastion
-  - Now that you are alredy connected in all the 
+  - Now that you are alredy connected in all the instances, try to connect in Server_1 by ssh
 
-  - Create Security Groupes (Open the Document Sg.md, to see more about the configuration)
+
+          00:00:00 ~ →  ssh -A ec2-user@Invader_IP_Address
+           ,     #_
+            ~\_  ####_        Amazon Linux 2023
+           ~~  \_#####\
+           ~~     \###|
+           ~~       \#/ ___   https://aws.amazon.com/linux/amazon-linux-2023
+             ~~       V~' '->
+             ~~~         /
+               ~~._.   _/
+                  _/ _/
+                _/m/'
+         Last login: Thu may 10 00:00:00 2000 from Your_Gateway_IP
+         [ec2-user@Invader_IP_Address ~]$ ssh ec2-user@Server_IP_Address
+
+    - If every thing runs alright the terminal will give you nothing about it, more especifically the terminal will be running in a loop trying to connect and beeing refused by the ACL on SubNet_B 
+    
+  - Create Security Groups (see the document Sg.md for configuration details)
   - 
