@@ -8,7 +8,7 @@
 - Input rules:
     
     - Your own gateway IP Address (We use this to connect in our Bastion host)
-    - Subnet_B IPV4 CIDR (We are saying SubNet_A can receive packages of SubNet_B)
+    - Subnet_B IPV4 CIDR (We are saying SubNet_A can receive packages from SubNet_B)
     
 - Output rules:
     
@@ -22,7 +22,7 @@
 
 - Input rules:
     
-    - Subnet_A IPV4 CIDR (We are saying Subnet_B can receive packages of SubNet_A)
+    - Subnet_A IPV4 CIDR (We are saying Subnet_B can receive packages from SubNet_A)
     
 - Output rules:
     
@@ -34,7 +34,7 @@
 - Input rules:
     
     - Your own gateway IP Address (We use this to connect in our ACL with some privacy)
-    - Subnet_B IPV4 CIDR (We are saying SubNet_C can receive packages of SubNet_B)
+    - Subnet_B IPV4 CIDR (We are saying SubNet_C can receive packages from SubNet_B)
     
 - Output rules:
     
@@ -44,4 +44,4 @@
     
 ## IMPORTANT
 
-Notice the SubNet_C can send and receive packages from SubNet_A, but SubNet_A will not send or receive any of this packages. Because we configurate ACL-SubNet_A to just talk with SubNet_B
+Notice the SubNet_C can send and receive packages from SubNet_A, but SubNet_A will not send or receive any of this packages. Because we configurate ACL-SubNet_A to just communicate with SubNet_B
