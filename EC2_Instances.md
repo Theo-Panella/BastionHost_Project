@@ -3,7 +3,7 @@
 - It's more commun to use Amazon Linux or Ubuntu
 
 ## 🔑 Create a SSH pair key for login
-- Create you SSH and download it (normaly when you create, it will download automatically)
+- Use or create your SSH and download it (normaly when you create, it will download automatically)
 - When it download follow the normal steps using: "chmod 400 file.pem" to make it more secure for read
 
 ## 🍬 Tip
