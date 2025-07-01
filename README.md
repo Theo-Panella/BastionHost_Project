@@ -48,7 +48,7 @@ A project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
 
 
   - Now connect to the Server_1 / Instance_1
-  - It's important to notice that we already made the one single connection with ssh -A, so our Bastion instance already have the SSH pair key to connect in the SubNet_B
+  - It's important to notice that we already made the one single connection with ssh -A, so our Bastion instance already have the SSH pair key to connect in our Server_1
     
         ##[ec2-user@Bastion_IP_Address ~]$ ssh ec2-user@Server_IP_Address
          ,     #_
