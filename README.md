@@ -6,7 +6,7 @@ A project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
 - VPC peering
 - Subnets
 - ACLs for minimun traffic 
-- EC2 machines 
+- EC2 Instances 
 - Security Groupes
 
 
