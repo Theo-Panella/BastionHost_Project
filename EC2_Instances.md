@@ -7,7 +7,7 @@
 - When it download follow the normal steps using: "chmod 400 file.pem" to make it more secure for read
 
 ## 🍬 Tip
-- My tip is to use "ssh -A username@IP_address" to connect in the Bastion instance
+- Use "ssh -A username@IP_address" to connect in the Bastion instance
     - Because the -A make a single connection, being more secure, so when you connect to Bastion server and after this
       try to  "jump" from another instance, you don't need to copy the ssh pair key, you just use "ssh username@IP_address"
 - If you had some troubles using "ssh -A", maybe the command is pulling your id_rsa and sending to the instance, to resolve this
