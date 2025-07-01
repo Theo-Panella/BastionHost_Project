@@ -25,9 +25,16 @@ A project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
   - Create EC2 instances (Open the Document EC2_Instances.md, to see more about it)
 
   ## 📝 Testing ##
+  - Open your terminal
   - Connect in the Bastion instance using:
     
-         ssh -A username@IP_Address
+         ssh -A username@Instance_IP_Address
+
+  - Now  we are connected
+  - ![Captura de tela de 2025-07-01 13-58-08](https://github.com/user-attachments/assets/045ba153-6eb9-4511-bcd4-c719611a248a)
+
+  - Open another terminal and connect to the invader instance using the same comand
+    
 
   - Create Security Groupes (Open the Document Sg.md, to see more about the configuration)
   - 
