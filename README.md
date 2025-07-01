@@ -31,8 +31,7 @@ A project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
          ssh -A username@Instance_IP_Address
 
   - Now  we are connected
-  - ![Captura de tela de 2025-07-01 13-58-08](https://github.com/user-attachments/assets/045ba153-6eb9-4511-bcd4-c719611a248a)
-
+    
   - Open another terminal and connect to the invader instance using the same comand
     
 
