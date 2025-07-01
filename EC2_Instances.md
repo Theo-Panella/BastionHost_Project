@@ -17,6 +17,6 @@
 - Configurate the OS
 - Use your downloaded ssh pair key
 - ⚠️ Edit net configuration, putting the instance in SubNet_A ⚠️
-- the security groupe just leave the way that is, after we will change it (by default is 0.0.0.0/0 "All comunication")
+- The security groupe just leave the way that is, after we will change it (by default is 0.0.0.0/0 "All comunication")
 
 ## 💻 Instance_1 or Server_1
