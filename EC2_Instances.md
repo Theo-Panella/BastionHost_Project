@@ -8,4 +8,5 @@
 
 ## Tip
 - My tip is to use "ssh -A username@IP_address" to connect in the Bastion instance
-    - Because the -A make a single connection, being more secure, so when you connect to Bastion server and after try to do the "jump" from another machine, you don't need to copy the ssh pair key
+    - Because the -A make a single connection, being more secure, so when you connect to Bastion server and after this
+      try to  "jump" from another instance, you don't need to copy the ssh pair key, you just use "ssh username@IP_address"
