@@ -87,7 +87,8 @@ A project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
          Last login: Thu may 10 00:00:00 2000 from Your_Gateway_IP
          [ec2-user@Invader_IP_Address ~]$ ssh ec2-user@Server_IP_Address
 
-    - If every thing runs alright the terminal will give you nothing about it, more especifically the terminal will be running in a loop trying to connect and beeing refused by the ACL on SubNet_B 
+    - If every thing runs alright the terminal will give you nothing about it, more especifically the terminal will be running in a loop trying to connect and beeing refused by the ACL on SubNet_B
+    - And if this happen to you... Congratulations again, you made a secure enviromment using just ACLs 🎉🎉
     
   - Create Security Groups (see the document Sg.md for configuration details)
   - 
