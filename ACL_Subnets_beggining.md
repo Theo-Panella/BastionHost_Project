@@ -1,6 +1,6 @@
 ## ⚠️ IMPORTANT ⚠️
  - We are talking about ACL (StateLess comunication)
- - When you see about all the ACLs Notice the SubNet_C can send and receive packages from SubNet_B, but SubNet_B will not send or receive any of this packages. Because we configurate ACL-SubNet_B to just communicate with SubNet_A
+ - When you saw about all the ACLs Notice the SubNet_C can send and receive packages from SubNet_B, but SubNet_B will not send or receive any of this packages. Because we configurate ACL-SubNet_B to just communicate with SubNet_A
 
 
 
