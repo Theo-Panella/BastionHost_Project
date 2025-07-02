@@ -90,5 +90,7 @@ A project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
     - If every thing runs alright the terminal will give you nothing about it, more especifically the terminal will be running in a loop trying to connect and beeing refused by the ACL on SubNet_B
     - And if this happen to you... Congratulations again, you made a secure enviromment using just ACLs 🎉🎉
     
-  - Create Security Groups (see the document Sg.md for configuration details)
-  - 
+  - Now the last part is the Security Groups (see the document Sg.md for configuration details)
+
+- VPC_2: 
+    
