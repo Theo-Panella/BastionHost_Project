@@ -43,7 +43,6 @@
     - Subnet_B IPV4 CIDR (We are saying Subnet_C can send packages to SubNet_B)
 
 ## ‼️ Important to notice ‼️
-
-- Notice the SubNet_C can send and receive packages from SubNet_B, but SubNet_B will not send or receive any of this packages. Because we configurate ACL-SubNet_B to just communicate with SubNet_A
+- The SubNet_C can send and receive packages from SubNet_B, but SubNet_B will not send or receive any of this packages. Because we configurate ACL-SubNet_B to just communicate with SubNet_A
 
 
