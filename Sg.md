@@ -1,1 +1,27 @@
-## adsa
+## ⚠️ IMPORTANT ⚠️
+
+- We are talking about Security Groups (StateFull comunication)
+- This one is more simple to configurate because Sg use the Statefull method
+- In this case i gave to the Sg the possibility to pass all the Protocols type, but this isn't the most secure way, if you will do a company aplication, try to study the protocols that will be use in this network and specify to use the minimum amount of protocols. Then the network will be more secure and you will be limiting the ways of access from invaders
+
+## 🛡️ Sg Base_to_Bastion
+
+- Input Rules:
+    - Your own gateway IP Address (We use this to connect in our Bastion host)
+    - The Bastion instance IP (⚠️ It's the public IP, you can't connect in a private IP if you aren't in the network ⚠️)
+
+- Output Rules:
+    - 0.0.0.0/0 (General comunication)
+
+## 🗄️ Sg Bastion_to_Servers
+
+- Input Rules:
+    - The Bastion IP (Now we can use the private IP)
+
+- Output Rules:
+  - 0.0.0.0/0
+
+## 👨🏻‍💻 Sg Invader
+
+- We are talking about an invader, so don't need to be secure.... 🥴
+- Input
