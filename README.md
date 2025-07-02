@@ -92,7 +92,7 @@ A project simulating a Bastion host (Jumping server) and VPC peering in AWS usin
     - But let's supose that you want to be sure about the results. If you fell insecure about it try to connect in the Server_2 (Instance_2) using the Bastion, and then with the Invader instance, you will use the same methods but with differents IP address
     
   - Now let's go back in the configuration and do the last part, that is the Security Groups (see the document Sg.md for configuration details)
-  - I recommend to create the Sgs (Security groups) because is an extra security layer, and if you want, you can specify what instance can connect to another and what type of protocol can pass the Sg
+  - I recommend to create the Sgs (Security groups) because is an extra security layer, and if you want, you can specify what instance can connect to another and what type of protocol can pass the Sg. But if this is not the case, you can move on
   - But this is a recommendation, the main purpose of the project is already done, after this part we will start the VPC_2 configuration and the VPC peering
 
 - VPC_2: 
