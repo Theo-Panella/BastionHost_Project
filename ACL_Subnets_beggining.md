@@ -1,6 +1,7 @@
 ## ⚠️ IMPORTANT ⚠️
  - We are talking about ACL (StateLess comunication)
  - See the advice in the end of the document
+ - In this case i gave to the ACL the possibility for all the traffic, but it's not the more secure way, if you will do a compony aplication, try to study the protocols that will be use in this network and specify for the minimum ways of traffic
 
 
 ## 🖧 ACL-SubNet_A:
