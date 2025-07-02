@@ -7,8 +7,8 @@
 ## 🛡️ Sg Base_to_Bastion
 
 - Input Rules:
-    - Your own gateway IP Address (We use this to connect in our Bastion host)
-    - The Bastion instance IP (⚠️ It's the public IP, you can't connect in a private IP if you aren't in the network ⚠️)
+    - Your own gateway IP Address
+   ############################  - The Bastion instance IP (⚠️ It's the public IP, you can't connect in a private IP if you aren't in the network ⚠️) ##################################
 
 - Output Rules:
     - 0.0.0.0/0 (General comunication)
@@ -23,5 +23,8 @@
 
 ## 👨🏻‍💻 Sg Invader
 
-- We are talking about an invader, so don't need to be secure.... 🥴
-- Input
+- Input rules:
+    -  Your own gateway IP Address
+
+- Output Rules:
+    - 0.0.0.0/0
