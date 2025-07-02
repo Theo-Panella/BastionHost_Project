@@ -1,6 +1,6 @@
 ## ⚠️ IMPORTANT ⚠️
  - We are talking about ACL (StateLess comunication)
- - See the last advice on the end of document
+ - See the advice in the end of the document
 
 
 ## 🖧 ACL-SubNet_A:
