@@ -18,19 +18,25 @@
 - Configurate the OS
 - Use your downloaded ssh pair key
 - Edit network configuration, putting the instance in SubNet_A
-- The security groupe just leave the way that already is, after we will change it --> default is 0.0.0.0/0 "All comunication"
+- The security group just leave the way that already is, after we will change it --> default is 0.0.0.0/0 "All comunication"
 
 ## 💻 Instance_1 or Server_1
 - Configurate the OS
 - Use your downloaded ssh pair key
 - Edit network configuration, putting the instance in SubNet_B
-- The security groupe just leave the way that already is, after we will change it --> default is 0.0.0.0/0 "All comunication"
+- The security group just leave the way that already is, after we will change it --> default is 0.0.0.0/0 "All comunication"
+
+## 💻 Instance_2 or Server_2
+- Configurate the OS
+- Use your downloaded ssh pair key
+- Edit network configuration, putting the instance in SubNet_B
+- The security group just leave the way that already is, after we will change it --> default is 0.0.0.0/0 "All comunication"
 
 ## 👨🏻‍💻 Invader
 - Configurate the OS
 - Use your downloaded ssh pair key
 - Edit network configuration, putting the instance in SubNet_C
-- The security groupe just leave the way that already is, after we will change it --> default is 0.0.0.0/0 "All comunication"
+- The security group just leave the way that already is, after we will change it --> default is 0.0.0.0/0 "All comunication"
 
 ## ☣️ATENTION☣️
 The security groups will be configured after all the other components are set up. By using only ACLs as the security method, we can ensure that the ACLs are working correctly
