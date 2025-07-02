@@ -86,9 +86,10 @@ A project simulating a Bastion host (Jumping server) and VPC peering in AWS usin
                 _/m/'
          Last login: Thu may 10 00:00:00 2000 from Your_Gateway_IP
          [ec2-user@Invader_IP_Address ~]$ ssh ec2-user@Server_IP_Address
-
+ 
     - If every thing runs alright the terminal will give you nothing about it, more especifically the terminal will be running in a loop trying to connect and beeing refused by the ACL on SubNet_B
     - And if this happen to you... Congratulations again, you made a secure enviromment using just ACLs 🎉🎉
+    - But let's supose that you want to be sure about the results. If you fell insecure about it try to connect in the Server_2 (Instance_2) using the Bastion, and then with the Invader instance, you will use the same methods but with differents IP address
     
   - Now let's go back in the configuration and do the last part, that is the Security Groups (see the document Sg.md for configuration details)
   - I recommend to create the Sgs (Security groups) because is an extra security layer, and if you want, you can specify what instance can connect to another and what type of protocol can pass the Sg
