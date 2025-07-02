@@ -1,7 +1,7 @@
 ## ⚠️ IMPORTANT ⚠️
  - We are talking about ACL (StateLess comunication)
  - See the advice in the end of the document
- - In this case i gave to the ACL the possibility to pass all the traffic, but this isn't the most secure way, if you will do a company aplication, try to study the protocols that will be use in this network and specify to use the minimum amount of protocols. Then the network will be more secure and you have limited the ways of access from invaders
+ - In this case i gave to the ACLs the possibility to pass all the traffic, but this isn't the most secure way, if you will do a company aplication, try to study the protocols that will be use in this network and specify to use the minimum amount of protocols. Then the network will be more secure and you will be limiting the ways of access from invaders
 
 
 ## 🖧 ACL-SubNet_A:
