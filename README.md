@@ -91,6 +91,7 @@ A project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
     - And if this happen to you... Congratulations again, you made a secure enviromment using just ACLs 🎉🎉
     
   - Now the last part is the Security Groups (see the document Sg.md for configuration details)
+  - I recommend to create the Sgs (Security groups) because is an extra security layer, and if you want, you can specify what instance can connect to another and what type of protocol can pass the Sg
 
 - VPC_2: 
     
