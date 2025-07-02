@@ -90,8 +90,9 @@ A project simulating a Bastion host (Jumping server) and VPC peering in AWS usin
     - If every thing runs alright the terminal will give you nothing about it, more especifically the terminal will be running in a loop trying to connect and beeing refused by the ACL on SubNet_B
     - And if this happen to you... Congratulations again, you made a secure enviromment using just ACLs 🎉🎉
     
-  - Now the last part is the Security Groups (see the document Sg.md for configuration details)
-  - I recommend to create the Sgs (Security groups) because is an extra security layer, and if you want, you can specify what instance can connect to another and what type of protocol can pass the Sg
+- Now let's go back in the configuration and do the last part, that is the Security Groups (see the document Sg.md for configuration details)
+- I recommend to create the Sgs (Security groups) because is an extra security layer, and if you want, you can specify what instance can connect to another and what type of protocol can pass the Sg
+- But this is a recommendation, the main purpose of the project is already done, after this part we will start the VPC_2 configuration and the VPC peering
 
 - VPC_2: 
     
