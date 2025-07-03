@@ -65,13 +65,12 @@ A project simulating a Bastion host (Jumping server) and VPC peering in AWS usin
         [ec2-user@Server_IP_Address ~]$
 
   - if you made it. Congratulations!! 🎉🎉
-    You made a jump server connection. Now we can take a step foward and test the instance privace
+    You made a jump server connection. Now we can take a step further and test the instance privacy
 
     ##
     
   - Open another terminal and connect to the invader instance using the same command as Bastion
   - Now that you are alredy connected in all the instances, try to connect in Server_1 by ssh
-
 
           00:00:00 ~ →  ssh -A ec2-user@Invader_IP_Address
            ,     #_
@@ -87,7 +86,7 @@ A project simulating a Bastion host (Jumping server) and VPC peering in AWS usin
          Last login: Thu may 10 00:00:00 2000 from Your_Gateway_IP
          [ec2-user@Invader_IP_Address ~]$ ssh ec2-user@Server_IP_Address
  
-    - If every thing runs alright, the terminal will give you nothing about it, more especifically the terminal will be running in a loop trying to connect and beeing refused by the ACL on SubNet_B
+    - If every thing runs ok, the terminal will give you nothing about it, more especifically the terminal will be running in a loop trying to connect and beeing refused by the ACL on SubNet_B
     - And if this happen to you... Congratulations again, you made a secure enviromment using just ACLs 🎉🎉
     - But let's supose that you want to be sure about the results. If you fell insecure about it try to connect in the Server_2 (Instance_2) using the Bastion, and then with the Invader instance, you will use the same methods but with differents IP address
     
