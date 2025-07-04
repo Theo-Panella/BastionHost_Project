@@ -94,5 +94,10 @@ A project simulating a Bastion host (Jumping server) and VPC peering in AWS usin
   - I recommend to create the Sgs (Security groups) because is an extra security layer, and if you want, you can specify what instance can connect to another and what type of protocol can pass the Sg. But if this isn't the case, you can move on
   - But this is a recommendation, the main purpose of the project is already done, after this part we will start the VPC_2 configuration and the VPC peering
 
-- VPC_2: 
+- VPC_2:
+  - Create one Subnet: SubNet_A
+  - Create an ACL for this Subnet (Open the Document ACL_Subnets.md to see more about it)
+  - Create EC2 instance (Open the Document EC2_Instances.md, to see more about the details)
+ 
+    
     
