@@ -38,7 +38,7 @@
 - Edit network configuration, putting the instance in SubNet_C
 - The security group just leave the way that already is, after we will change it --> default is 0.0.0.0/0 "All comunication"
 
-## ⚠️ Do all the VPC 1 first, it's easier and less complicated than do both VPCs at once ⚠️
+## ⚠️ Do all the VPC 1 first, it's easier then do both VPCs at once ⚠️
 
 ## 🌐 VPC 2 — Instance_1
 
