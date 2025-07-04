@@ -48,7 +48,7 @@ A project simulating a Bastion host (Jumping server) and VPC peering in AWS usin
 
 
   - Now connect to the Server_1 / Instance_1 using the private IP address (We use the private IP because we are in the same VPC as the instance, so don't need to use the public IP)
-  - It's important to notice that we already made the one single connection with ssh -A, so our Bastion instance already have the SSH pair key to connect in our Server_1
+  - It's important to notice that we already made the agent foward connection with ssh -A, so our Bastion instance already have the SSH pair key to connect in our Server_1 and Server_1 will have the same key to connect in other instances in the same VPC
     
         [ec2-user@Bastion_IP_Address ~]$ ssh ec2-user@Server_IP_Address
          ,     #_
@@ -98,6 +98,9 @@ A project simulating a Bastion host (Jumping server) and VPC peering in AWS usin
   - Create one Subnet: SubNet_A
   - Create an ACL for this Subnet (Open the Document ACL_Subnets.md to see more about it)
   - Create EC2 instance (Open the Document EC2_Instances.md, to see more about the details)
+  - Configurate the VPC peering (Open the Document VPC_peering.md, to see more details)
  
-    
-    
+  ## 📝 Testing ##
+  - Open your terminal
+  - In the Server_1, try to connect in the     
+
