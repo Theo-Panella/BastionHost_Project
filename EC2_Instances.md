@@ -13,30 +13,32 @@
 - If you had some troubles using "ssh -A", maybe the command is pulling your id_rsa and sending to the instance, to resolve this
   try "ssh-add file.pem /path/to/id_rsa", then you may be able to connect
   
+## 🌐 VPC 1 — ACL-SubNet_A, ACL-SubNet_B, and ACL-SubNet_C
 
-## 🛡️ Bastion Instance
+### 🛡️ Bastion Instance
 - Configurate the OS
 - Use your downloaded ssh pair key
 - Edit network configuration, putting the instance in SubNet_A
 - The security group just leave the way that already is, after we will change it --> default is 0.0.0.0/0 "All comunication"
 
-## 💻 Instance_1 or Server_1
+### 💻 Instance_1 or Server_1
 - Configurate the OS
 - Use your downloaded ssh pair key
 - Edit network configuration, putting the instance in SubNet_B
 - The security group just leave the way that already is, after we will change it --> default is 0.0.0.0/0 "All comunication"
 
-## 💻 Instance_2 or Server_2
+### 💻 Instance_2 or Server_2
 - Configurate the OS
 - Use your downloaded ssh pair key
 - Edit network configuration, putting the instance in SubNet_B
 - The security group just leave the way that already is, after we will change it --> default is 0.0.0.0/0 "All comunication"
 
-## 👨🏻‍💻 Invader
+### 👨🏻‍💻 Invader
 - Configurate the OS
 - Use your downloaded ssh pair key
 - Edit network configuration, putting the instance in SubNet_C
 - The security group just leave the way that already is, after we will change it --> default is 0.0.0.0/0 "All comunication"
 
-## ☣️ATENTION☣️
-The security groups will be configured after all the other components are set up. By using only ACLs as the security method, we can ensure that the ACLs are working correctly
+## 🌐 VPC 2 — ACL-SubNet_A
+
+###
