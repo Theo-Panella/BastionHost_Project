@@ -2,10 +2,10 @@
 A project simulating a Bastion host (Jumping server) and VPC peering in AWS using EC2 and VPCs
 
 ## ⚠️IMPORTANT ADVICES⚠️
-### I will use this emoji ⚠️ a lot... 😅
-### Some of the things **aren't recommended** to use in company productions(Eg: Use the same SSH key for every instance and configurete Sgs in 0.0.0.0/0 routes), these things are just for educational purpouse
-### I want to improve this project a lot more in the future, using Terraform and Github actions(pipeline), so be connected with me on my Linkedin, to don't miss this updates
--https://www.linkedin.com/in/theo-panella-b079a4201
+- I will use this emoji ⚠️ a lot... 😅
+- Some of the things **aren't recommended** to use in company productions(Eg: Use the same SSH key for every instance and configurete Sgs in 0.0.0.0/0 routes), these things are just for educational purpouse
+- I want to improve this project a lot more in the future, using Terraform and Github actions(pipeline), so be connected with me on my Linkedin, to don't miss this updates
+- **https://www.linkedin.com/in/theo-panella-b079a4201**
 
 
 ## 📐 Architecture ##
