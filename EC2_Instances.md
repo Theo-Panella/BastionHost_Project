@@ -12,7 +12,7 @@
 - If you had some troubles using "ssh -A", maybe the command is pulling your id_rsa and sending to the instance, to resolve this
   try "ssh-add file.pem /path/to/id_rsa", then you may be able to connect
   
-## 🌐 VPC 1: Bastion, Instance_1, Instance_2, Invader
+## 🌐 VPC 1 — Bastion, Instance_1, Instance_2, Invader
 
 ### 🛡️ Bastion Instance
 - Configurate the OS
