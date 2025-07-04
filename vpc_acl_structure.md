@@ -6,9 +6,9 @@
 
 ---
 
-## 🌐 VPC 1 — 🖧 ACL-SubNet_A, ACL-SubNet_B, and ACL-SubNet_C
+## 🌐 VPC 1 — ACL-SubNet_A, ACL-SubNet_B, and ACL-SubNet_C
 
-### 📧 ACL-SubNet_A
+### 🖧 ACL-SubNet_A
 
 **Input rules:**
 - Your own gateway IP address (used to connect to the Bastion Host)  
@@ -20,7 +20,7 @@
 
 ---
 
-### 📧 ACL-SubNet_B
+### 🖧 ACL-SubNet_B
 
 **Input rules:**
 - SubNet_A IPv4 CIDR (allows SubNet_B to receive packets from SubNet_A)
@@ -30,7 +30,7 @@
 
 ---
 
-### 📧 ACL-SubNet_C
+### 🖧 ACL-SubNet_C
 
 **Input rules:**
 - Your own gateway IP address (used for private ACL access)  
