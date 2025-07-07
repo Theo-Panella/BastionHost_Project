@@ -1,5 +1,5 @@
 # BastionHost_Project
-A project simulating a Bastion host (Jumping server) and VPC peering in AWS using EC2 and VPCs
+This is a practical showcase of VPC peering project simulating a Bastion host (Jumping server) and VPC peering in AWS using EC2 and VPCs
 
 ## ⚠️IMPORTANT ADVICES⚠️
 - I will use this emoji ⚠️ a lot... 😅
@@ -25,10 +25,10 @@ A project simulating a Bastion host (Jumping server) and VPC peering in AWS usin
 - ACLs and Security Groups
 
 ## 🔧 Configuration ##
-- We will start by doing all the configuration of VPC_1 and testing, after it, we create the VPC_2 and configure for communication with VPC_1
+- We gonna start by doing all the configuration of VPC_1 and testing, after it, we ill create the VPC_2 and configure for communication with VPC_1
 - VPC_1:
-  - Create Three Subnets: SubNet_A, SubNet_B, SubNet_C
-  - Create an ACL for each Subnet (Open the Document ACL_Subnets_beggining.md to see more about it)
+  - Create Three Subnets: SubNet_A, SubNet_B, SubNet_C in VPC 1
+  - Create an ACL for each Subnet (Open the Document ACL_Subnets.md to see more about it)
   - Create EC2 instances (Open the Document EC2_Instances.md, to see more about the details)
 
   ## 📝 Testing ##
