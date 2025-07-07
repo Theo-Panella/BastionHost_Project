@@ -8,7 +8,7 @@
 
 ## 🍬 Tip
 - Use "ssh -A username@IP_address" to connect in the Bastion instance
-    - Because the -A is an agent forwarding that allows you to use your local SSH agent, which means, you can authenticate on a remote servers making a single connection, being more secure, so when you connect to Bastion server and after this, try to  "jump" from another instance, you don't need to copy the ssh pair key, you just use "ssh username@IP_address"
+    - Because the -A is an agent forwarding that allows you to use your local SSH agent, which means, you can authenticate on a remote servers, making a single connection, being more secure, so when you connect to Bastion and after it, try to  "jump" from another instance, you don't need to copy the ssh pair key, you just use "ssh username@IP_address"
 - If you had some troubles using "ssh -A", maybe the command is pulling your id_rsa and sending to the instance, to resolve this
   try "ssh-add file.pem /path/to/id_rsa", then you may be able to connect
   
