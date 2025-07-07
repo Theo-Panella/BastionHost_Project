@@ -12,15 +12,16 @@
     - Your own gateway IP Address
 
 - Output Rules:
-    - 0.0.0.0/0 (General comunication)
-
+    - Instance_1 private IPv4 from VPC 1
+    - Instance_2 private IPv4 from VPC 1
+      
 ### 🗄️ Sg Bastion_to_Servers
 
 - Input Rules:
     - The Bastion IP (Now we can use the private IP)
 
 - Output Rules:
-  - 0.0.0.0/0 (General comunication)
+    - Instance_1 private IPv4 from VPC 2 (if you didn't do the VPC 2 just leave 0.0.0.0/0)
 
 ### 👨🏻‍💻 Sg Invader
 
@@ -35,8 +36,8 @@
 ### 🗄️ Sg Server_VPC2
 
 - Input Rules:
-    - Instance_1 private IPv4
-    - Instance_2 private IPv4
+    - Instance_1 private IPv4 from VPC 1
+    - Instance_2 private IPv4 from VPC 1
 
 - Output Rules:
     - 0.0.0.0/0 (General comunication)
