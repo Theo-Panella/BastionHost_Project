@@ -1,5 +1,5 @@
 # BastionHost_Project
-This is a practical showcase of VPC peering project simulating a Bastion host (Jumping server) and VPC peering in AWS using EC2 and VPCs
+This is a practical showcase of VPC peering project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
 
 ## ⚠️IMPORTANT ADVICES⚠️
 - I will use this emoji ⚠️ a lot... 😅
