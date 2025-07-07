@@ -3,6 +3,7 @@
 - See the advice at the end of the document.  
 - In this case, I allowed all protocol types in the ACLs — **not recommended** for production.  
 - If you're building a company-level application, **research the necessary protocols** and limit ACL rules to only what's essential. This **increases security** and **reduces attack** from invaders.
+- In this project, the only protocol used was ssh
 
 
 ## 🌐 VPC 1 — ACL-SubNet_A, ACL-SubNet_B, and ACL-SubNet_C
