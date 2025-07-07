@@ -3,7 +3,6 @@
 - See the advice at the end of the document.  
 - In this case, I allowed all protocol types in the ACLs — **not recommended** for production.  
 - If you're building a company-level application, allow output traffic on ports **1024–65535** (high ports used by the OS). For input, restrict traffic to **only what's necessary**, like TCP port 22 for SSH. This minimizes your attack surface.
-- In this project,was used output **SSH port 22** and input **All protocols high ports**
 
 
 ## 🌐 VPC 1 — ACL-SubNet_A, ACL-SubNet_B, and ACL-SubNet_C
