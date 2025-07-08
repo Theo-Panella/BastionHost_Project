@@ -125,13 +125,33 @@ This is a practical showcase of VPC peering project simulating a Bastion host (J
 
            [ec2-user@Server_IP_Address ~]$ cd .ssh
       
-           [ec2-user@ip-172-31-36-220 .ssh]$ nano id_rsa
+           [ec2-user@Server_IP_Address .ssh]$ nano id_rsa
 
-           [ec2-user@ip-172-31-36-220 .ssh]$ cd ..
+           [ec2-user@Server_IP_Address .ssh]$ cd ..
 
-           [ec2-user@ip-172-31-36-220  ~]$ ssh -A ec2-user@Server_VPC2_IP_Address
 
-  
+    - Now connect to Server_1 (VPC_2) from Server_1 (VPC_1)
+    
+           [ec2-user@Server_IP_Address ~]$ ssh -A ec2-user@Server_VPC2_IP_Address
+
+    - Then you will see
+
+          [ec2-user@Server_IP_Address ~]$ ssh ec2-user@Server_IP_Address
+             ,     #_
+             ~\_  ####_        Amazon Linux 2023
+            ~~  \_#####\
+            ~~     \###|
+            ~~       \#/ ___   https://aws.amazon.com/linux/amazon-linux-2023
+             ~~       V~' '->
+             ~~~         /
+              ~~._.   _/
+                 _/ _/
+               _/m/'
+          Last login: Thu may 10 00:00:00 2000 from Your_Bastion_IP
+          [ec2-user@Server_VPC2_IP_Address ~]$
+      
+## 🏁 FINISHED
+
 
 
 
