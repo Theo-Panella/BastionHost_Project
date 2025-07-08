@@ -149,8 +149,10 @@
                _/m/'
           Last login: Thu may 10 00:00:00 2000 from Your_Bastion_IP
           [ec2-user@Server_VPC2_IP_Address ~]$
+
+- And after all this things, you have finished all the concept of a Bastion Host with VPC peering
       
-## 🏁 FINISHED
+
 
 
 
