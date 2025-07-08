@@ -31,7 +31,7 @@
   - Create an ACL for each Subnet (Open the Document ACL_Subnets.md to see more about it)
   - Create EC2 instances (Open the Document EC2_Instances.md, to see more about the details)
 
-  ## 📝 Testing ##
+  ## 📝 Testing VPC_1 ##
   - Open your terminal
   - Connect in the Bastion instance using:
     
@@ -107,7 +107,7 @@
   - Create EC2 instance (Open the Document EC2_Instances.md, to see more about the details)
   - Configurate the VPC peering (Open the Document VPC_peering.md, to see more details)
  
-  ## 📝 Testing ##
+  ## 📝 Testing VPC_2 ##
   - Open your terminal
   - In the Server_1, try to connect in the Server_1 from VPC_2 by ssh (Observation: The SSH agent ins't capable to pass the VPC peering, so we need to copy the SSH file.pem to the Server_1 or Server_2 instance)
   - Open another terminal
