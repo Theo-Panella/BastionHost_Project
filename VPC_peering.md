@@ -13,5 +13,3 @@
 ### 🔀 Routes table VPC 2
 - Select the **VPC_2** route table
     - Associate the **SubNet_A_VPC_2** to the route table
-
-## 🏁 FINISHED
