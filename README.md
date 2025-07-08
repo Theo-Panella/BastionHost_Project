@@ -1,6 +1,6 @@
 # BastionHost_Project
-This is a practical showcase of VPC peering project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
-Open NetworkFlowChart.jpg to see the project idea
+- This is a practical showcase of VPC peering project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
+- Open NetworkFlowChart.jpg to see the project idea
 
 ## ⚠️IMPORTANT ADVICES⚠️
 - Some configurations **aren't recommended** to use in company productions (Eg: Use the same SSH key for every instance and configurete Sgs in 0.0.0.0/0 routes), these things are just for educational purpouse
