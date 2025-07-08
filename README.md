@@ -109,5 +109,30 @@ This is a practical showcase of VPC peering project simulating a Bastion host (J
  
   ## 📝 Testing ##
   - Open your terminal
-  - In the Server_1, try to connect in the     
+  - In the Server_1, try to connect in the Server_1 from VPC_2 by ssh (Observation: The SSH agent ins't capable to pass the VPC peering, so we need to copy the SSH file.pem to the Server_1 or Server_2 instance)
+  - Open another terminal
+  - Use cat file.pem, and copy the private key
 
+          00:00:00 ~/Downloads →  cat file.pem 
+        -----BEGIN RSA PRIVATE KEY-----
+              ADASDASDASDASDASDASD
+              ADASDASDASDASDASDASD
+              ADASDASDASDASDASDASD
+              ADASDASDASDASDASDASD
+        -----END RSA PRIVATE KEY-----
+
+    - After copy, go to Server_1 (VPC_1), create a id_rsa file in .ssh directory and paste the SSH key on the new id_rsa file
+
+           [ec2-user@Server_IP_Address ~]$ cd .ssh
+      
+           [ec2-user@ip-172-31-36-220 .ssh]$ nano id_rsa
+
+           [ec2-user@ip-172-31-36-220 .ssh]$ cd ..
+
+           [ec2-user@ip-172-31-36-220  ~]$ ssh -A ec2-user@Server_VPC2_IP_Address
+
+  
+
+
+
+          
