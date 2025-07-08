@@ -8,7 +8,7 @@
 ### 🔀 Routes table
 - Each VPC has one route table
 - Select the **VPC_1** route table
-  - Associate the **SubNet_B_VPC_1** to the route table
+    - Associate the **SubNet_B_VPC_1** to the route table
     
--Select the **VPC_2** route table
-  - Associate the **SubNet_A_VPC_2** to the route table
+- Select the **VPC_2** route table
+    - Associate the **SubNet_A_VPC_2** to the route table
