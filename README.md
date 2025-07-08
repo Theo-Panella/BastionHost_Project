@@ -2,9 +2,8 @@
 This is a practical showcase of VPC peering project simulating a Bastion host (Jumping server) in AWS using EC2 and VPCs
 
 ## ⚠️IMPORTANT ADVICES⚠️
-- I will use this emoji ⚠️ a lot... 😅
 - Some configurations **aren't recommended** to use in company productions (Eg: Use the same SSH key for every instance and configurete Sgs in 0.0.0.0/0 routes), these things are just for educational purpouse
-- I want to improve this project a lot more in the future, using Terraform and Github actions(pipeline), so be connected with me on my Linkedin, to don't miss this updates
+- I want to improve this project a lot more in the future, using Terraform and Github actions(pipeline), so be connected with me on my linkedin, to don't miss this updates
 - **https://www.linkedin.com/in/theo-panella-b079a4201**
 
 
@@ -25,7 +24,7 @@ This is a practical showcase of VPC peering project simulating a Bastion host (J
 - ACLs and Security Groups
 
 ## 🔧 Configuration ##
-- We gonna start by doing all the configuration of VPC_1 and testing, after it, we ill create the VPC_2 and configure for communication with VPC_1
+- let’s start by doing all the configuration of VPC_1 and testing, after it, create the VPC_2 and configure for communication with VPC_1
 - VPC_1:
   - Create Three Subnets: SubNet_A, SubNet_B, SubNet_C in VPC 1
   - Create an ACL for each Subnet (Open the Document ACL_Subnets.md to see more about it)
@@ -121,7 +120,7 @@ This is a practical showcase of VPC peering project simulating a Bastion host (J
               ADASDASDASDASDASDASD
         -----END RSA PRIVATE KEY-----
 
-    - After copy, go to Server_1 (VPC_1), create a id_rsa file in .ssh directory and paste the SSH key on the new id_rsa file
+    - After copy, go to Server_1 (VPC_1), create an id_rsa file in .ssh directory and paste the SSH key on the new id_rsa file
 
            [ec2-user@Server_IP_Address ~]$ cd .ssh
       
