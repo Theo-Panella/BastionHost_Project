@@ -61,7 +61,7 @@ jobs:
                 properties:
                   type: textarea
                   description: confirm the plan for terraform
-                  defaultvalue: ${{ steps.plan.outputs.stdout }}
+                  defaultvalue: '${{ steps.plan.outputs.stdout }}'
                   readOnly: yes
               - label: verify
                 properties:
