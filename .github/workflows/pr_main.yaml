@@ -40,32 +40,36 @@ jobs:
       - name: "terraform plan"
         id: plan
         run: |
-          terraform plan -no-color -out=tfplan > plan_terraform.txt
-          echo "stdout<<EOF" >> "$GITHUB_OUTPUT"
-          cat plan_terraform.txt >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          terraform plan -no-color -out=tfplan | tee plan_terraform.txt
+          # Build the whole "interactive" YAML here so it is parsed only once.
+          # The plan goes into a literal block scalar (|), so ':' and '"' in it are safe.
+          {
+            echo "interactive<<INTERACTIVE_EOF"
+            echo "fields:"
+            echo "  - label: overview"
+            echo "    properties:"
+            echo "      type: textarea"
+            echo "      description: Confirm the plan for terraform"
+            echo "      readOnly: true"
+            echo "      defaultValue: |"
+            sed 's/^/        /' plan_terraform.txt
+            echo "  - label: verify"
+            echo "    properties:"
+            echo '      display: Check "true" if you want to proceed with the terraform apply in branch main'
+            echo "      type: boolean"
+            echo "      defaultValue: false"
+            echo "      required: true"
+            echo "INTERACTIVE_EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: "Confirm plan"
         id: interactive-inputs
         uses: boasihq/interactive-inputs@v2
-        with: 
+        with:
           ngrok-authtoken: ${{ secrets.NGROK_AUTH_KEY }}
           timeout: 160
-          title: "Confirm de plan workflow, to make sure that the productions enviroment are ok"
-          interactive: |
-            fields:
-              - label: overview
-                properties:
-                  type: textarea
-                  description: confirm the plan for terraform
-                  defaultvalue: ${{ steps.plan.stdout }}
-                  readOnly: yes
-              - label: verify
-                properties:
-                  display: Check "yes" if you want to proceed with the terraform apply in branch main
-                  defaultvalue: false
-                  type: boolean
-                  required: true
+          title: "Confirm the plan workflow, to make sure that the production environment is ok"
+          interactive: ${{ steps.plan.outputs.interactive }}
 
       - name: "Analysing input"
         if: ${{ steps.interactive-inputs.outputs.verify == 'true' }}
