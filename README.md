@@ -118,7 +118,7 @@ This confirms the network isolation is working correctly.
 - [ ] AWS Network Firewall policy
 - [ ] VPC_2 with a second Server instance
 - [ ] VPC Peering between VPC_1 and VPC_2
-- [ ] GitHub Actions pipeline for automated `terraform apply`
+- [X] GitHub Actions pipeline for automated `terraform apply`
 
 ---
 
