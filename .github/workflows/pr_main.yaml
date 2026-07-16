@@ -58,8 +58,8 @@ jobs:
                 properties:
                   type: textarea
                   description: "Confirm the plan for terraform"
-                  defaultValue: "Please Verify the plan bellow"
-                  value: '${{ steps.plan.outputs.stdout }}'
+                  defaultValue: |
+                    ${{ steps.plan.outputs.stdout }}
                   readOnly: yes
               - label: verify
                 properties:
