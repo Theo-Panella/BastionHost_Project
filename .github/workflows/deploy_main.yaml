@@ -17,7 +17,7 @@ jobs:
 
       - name: "defining ssh credentials for ec2"
         run: |
-          mkdir -p ~/.ssh
+          mkdir .ssh
           echo "${{ secrets.SSH_KEY_EC2_AWS_PRIVATE }}" | tr -d '\r' > ~/.ssh/terraform-key
           echo "${{ secrets.SSH_KEY_EC2_AWS }}" | tr -d '\r' > ~/.ssh/terraform-key.pub
           chmod 600 ~/.ssh/terraform-key
