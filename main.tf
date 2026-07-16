@@ -160,5 +160,5 @@ resource "aws_instance" "instances" {
 # ============= Chave SSH para conexão =============
 resource "aws_key_pair" "key_connection" {
   key_name   = "SSH Key"
-  public_key = file("~/.ssh/terraform-key.pub") 
+  public_key = file(".ssh/terraform-key.pub") 
 }
