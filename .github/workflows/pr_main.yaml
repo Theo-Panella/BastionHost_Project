@@ -57,12 +57,14 @@ jobs:
               - label: overview
                 properties:
                   type: textarea
-                  description: confirm the plan for terraform
-                  defaultvalue: '${{ steps.plan.outputs.stdout }}'
+                  description: "Confirm the plan for terraform"
+                  defaultValue: "Please Verify the plan bellow"
+                  value: |
+                    ${{ steps.plan.outputs.stdout }}
                   readOnly: yes
               - label: verify
                 properties:
-                  display: Check "yes" if you want to proceed with the terraform apply in branch main
+                  display: Check "true" if you want to proceed with the terraform apply in branch main
                   defaultvalue: false
                   type: boolean
                   required: true
