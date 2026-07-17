@@ -1,7 +1,8 @@
 # =============  VPC  =============
 variable "vpc_configs" {
   default = {
-    "cidr_block" = "192.168.0.0/24"
+    VPC1 = {cidr_block = "192.168.0.0/24"}
+    VPC2 = {cidr_block = "172.18.0.0/24"}
   }
 }
 
