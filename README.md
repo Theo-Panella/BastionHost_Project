@@ -95,17 +95,21 @@ Check the Actions tab first.
 ## Prerequisites
 
 - [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.2
-- AWS credentials with access to **both** the S3 state bucket and the target account
+- **AWS credentials** — for local use, your AWS session must have access to the S3 state bucket (`aws-panella-bucket2`) and the target account; for CI, the workflow uses OIDC role assumption via `secrets.ARN`
 - An SSH key pair at `.ssh/terraform-key` (private) and `.ssh/terraform-key.pub` (public)
 
-Generate the key if you don't have one:
+Generate the SSH key if you don't have one:
 ```bash
 ssh-keygen -t rsa -b 4096 -f .ssh/terraform-key -N ""
 ```
 
-> If `terraform init` fails with `No valid credential sources found`, your session has
-> expired — re-authenticate before running anything. The error comes from the backend,
-> not the configuration.
+**Local credentials:** set up with `aws configure` or `aws sso login`. The S3 backend
+is in `us-east-1`; credentials need access to both that region (for state) and `us-west-2`
+(for the provider).
+
+> If `terraform init` fails with `No valid credential sources found`, your AWS session has
+> expired — re-authenticate with `aws sso login` or `aws configure` before running anything.
+> The error comes from the S3 backend, not the Terraform configuration.
 
 ---
 
@@ -146,6 +150,14 @@ Confirm no workflow run is active before doing this (see the state-locking note 
 ---
 
 ## Testing
+
+First, get the public IPs of your instances:
+
+```bash
+terraform output
+```
+
+Or from the AWS console: EC2 → Instances.
 
 ### 1. Connect to Bastion (jump server)
 
@@ -188,6 +200,21 @@ This confirms the network isolation is working correctly.
 - [ ] VPC Peering between VPC_1 and VPC_2
 - [X] S3 remote backend for shared state
 - [X] GitHub Actions pipeline for automated `terraform apply`
+
+---
+
+## Outputs
+
+After `terraform apply`, key information is available via:
+
+```bash
+terraform output -json
+```
+
+Useful fields:
+- `bastion_public_ip` — the Bastion host's public IP
+- `invasor_public_ip` — the Invasor instance's public IP
+- `server_1_private_ip` — the Server_1 private IP (reachable only from Bastion)
 
 ---
 
