@@ -23,7 +23,7 @@ data "aws_ami" "linux"{
 # ============= VPC =============
 resource "aws_vpc" "VPCs" {
   for_each = var.vpc_configs
-  cidr_block = var.vpc_configs[each.value].cidr_block
+  cidr_block = each.value.cidr_block
   instance_tenancy = "default"
 
   tags = {
