@@ -34,16 +34,6 @@ jobs:
         with: 
           terraform_version: 1.9.0
 
-      - name: "Verifying aws credentials"
-        run: |
-          aws sts get-caller-identity
-
-          aws iam get-role --role-name <nome-da-role> \
-            --query 'Role.PermissionsBoundary'
-          
-          aws s3api get-bucket-acl --bucket aws-panella-bucket2 \
-            --query 'Owner.ID'
-
       - name: "terraform init"
         run: terraform init
 
