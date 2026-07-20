@@ -10,9 +10,10 @@ variable "vpc_configs" {
 # =============  Subnets  =============
 variable "subnets" {
   default = {
-    "subnetA" = {cidr_block = "192.168.0.0/26" , az = "us-west-2a", ip_publico = true}
-    "subnetB" = {cidr_block = "192.168.0.64/26", az = "us-west-2a", ip_publico = false}
-    "subnetC" = {cidr_block = "192.168.0.128/26", az = "us-west-2a", ip_publico = true}
+    "subnetA" = {cidr_block = "192.168.0.0/26" , az = "us-west-2a", ip_publico = true, VPC = "VPC1"}
+    "subnetB" = {cidr_block = "192.168.0.64/26", az = "us-west-2a", ip_publico = false, VPC = "VPC1"}
+    "subnetC" = {cidr_block = "192.168.0.128/26", az = "us-west-2a", ip_publico = true, VPC = "VPC1"}
+    "subnetA_VPC2" = {cidr_block = "172.18.0.0/26", az = "us-west-2a", ip_publico = false, VPC = "VPC2"}
   }
 }
 

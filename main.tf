@@ -43,7 +43,7 @@ resource "aws_internet_gateway" "gw" {
 # ============= Subnets =============
 resource "aws_subnet" "subnets" {
   for_each = var.subnets
-  vpc_id = aws_vpc.VPCs["VPC1"].id
+  vpc_id = aws_vpc.VPCs[each.value.VPC].id
   cidr_block = each.value.cidr_block
   availability_zone = each.value.az
   map_public_ip_on_launch = each.value.ip_publico
@@ -105,7 +105,7 @@ resource "aws_route_table" "private_route_table" {
 # ============= Route Table association =============
 resource "aws_route_table_association" "public_association_subnet_global" {
   for_each = {
-    for sub_a, sub_b in var.subnets : sub_a => sub_b if sub_b.ip_publico == true
+    for sub_a, sub_b in var.subnets : sub_a => sub_b if sub_b.ip_publico == true && sub_b.VPC == "VPC1"
   }
   route_table_id = aws_route_table.public_route_table.id
   subnet_id = aws_subnet.subnets[each.key].id
@@ -113,7 +113,7 @@ resource "aws_route_table_association" "public_association_subnet_global" {
 
 resource "aws_route_table_association" "private_association_subnet_global" {
   for_each = {
-    for sub_a, sub_b in var.subnets : sub_a => sub_b if sub_b.ip_publico == false
+    for sub_a, sub_b in var.subnets : sub_a => sub_b if sub_b.ip_publico == false && sub_b.VPC == "VPC1"
   }
   route_table_id = aws_route_table.private_route_table.id
   subnet_id = aws_subnet.subnets[each.key].id
