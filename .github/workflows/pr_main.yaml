@@ -24,6 +24,7 @@ jobs:
           exit-code: '1' # Fails the pipeline if issues are discovered
           format: 'sarif'
           output: 'trivy-results.sarif'
+          trivy-config: '--skip-version-check'
 
       - name: Upload Scan Results to GitHub Security Tab
         uses: github/codeql-action/upload-sarif@v4
