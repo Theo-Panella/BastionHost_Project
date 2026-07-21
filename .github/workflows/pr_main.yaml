@@ -5,7 +5,34 @@ on:
       - main
     
 jobs:
+  Trivy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write 
+
+    steps:
+      - name: "Checkout do código"
+        uses: actions/checkout@v4
+
+      - name: Run Trivy IaC Scanner
+        uses: aquasecurity/trivy-action@v0.36.0 # Match latest verified action tag
+        with:
+          scan-type: 'config'
+          scan-ref: '.'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1' # Fails the pipeline if issues are discovered
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Scan Results to GitHub Security Tab
+        uses: github/codeql-action/upload-sarif@v4
+        if: always() # Ensures logs upload even if vulnerabilities break the build
+        with:
+          sarif_file: 'trivy-results.sarif'
+
   Configuration:
+    needs: Trivy   
     runs-on: ubuntu-latest
     permissions:
       id-token: write
