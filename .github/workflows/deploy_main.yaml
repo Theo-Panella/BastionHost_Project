@@ -44,5 +44,4 @@ jobs:
         run: terraform plan
 
       - name: "Terraform apply"
-        if: ${{ steps.interactive-inputs.outputs.verify == 'true' }}
         run: terraform apply tfplan
