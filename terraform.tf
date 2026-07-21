@@ -6,4 +6,11 @@ terraform {
     }
   }
   required_version = ">= 1.2"
+
+  backend "s3" {
+    bucket = "aws-panella-bucket2"
+    key    = "terraform.tfstate"
+    region = "us-east-1"
+  }
+
 } 

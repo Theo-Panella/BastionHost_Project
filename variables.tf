@@ -1,7 +1,8 @@
 # =============  VPC  =============
 variable "vpc_configs" {
   default = {
-    "cidr_block" = "192.168.0.0/24"
+    VPC1 = {cidr_block = "192.168.0.0/24"}
+    VPC2 = {cidr_block = "172.18.0.0/24"}
   }
 }
 
@@ -9,9 +10,10 @@ variable "vpc_configs" {
 # =============  Subnets  =============
 variable "subnets" {
   default = {
-    "subnetA" = {cidr_block = "192.168.0.0/26" , az = "us-west-2a", ip_publico = true}
-    "subnetB" = {cidr_block = "192.168.0.64/26", az = "us-west-2a", ip_publico = false}
-    "subnetC" = {cidr_block = "192.168.0.128/26", az = "us-west-2a", ip_publico = true}
+    "subnetA" = {cidr_block = "192.168.0.0/26" , az = "us-west-2a", ip_publico = true, VPC = "VPC1"}
+    "subnetB" = {cidr_block = "192.168.0.64/26", az = "us-west-2a", ip_publico = false, VPC = "VPC1"}
+    "subnetC" = {cidr_block = "192.168.0.128/26", az = "us-west-2a", ip_publico = true, VPC = "VPC1"}
+    "subnetA_VPC2" = {cidr_block = "172.18.0.0/26", az = "us-west-2a", ip_publico = false, VPC = "VPC2"}
   }
 }
 
@@ -80,8 +82,8 @@ locals {
           egress = [ {from_port = 0, to_port = 0, protocol = -1, cidr_blocks = ["0.0.0.0/0"] }]
           },
         "Server_1" = { 
-          ingress = [ {from_port = 0, to_port = 0, protocol = -1, cidr_blocks = [var.subnets["subnetB"].cidr_block] } ],
-          egress = [ {from_port = 0, to_port = 0, protocol = -1, cidr_blocks = [var.subnets["subnetB"].cidr_block] }]
+          ingress = [ {from_port = 0, to_port = 0, protocol = -1, cidr_blocks = [var.subnets["subnetA"].cidr_block] } ],
+          egress = [ {from_port = 0, to_port = 0, protocol = -1, cidr_blocks = [var.subnets["subnetA"].cidr_block] }]
           }
     }
   }

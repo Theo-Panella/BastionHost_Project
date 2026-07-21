@@ -21,13 +21,19 @@ data "aws_ami" "linux"{
 # ============= Network Components =============
 
 # ============= VPC =============
-resource "aws_vpc" "VPC1" {
-  cidr_block = var.vpc_configs.cidr_block
+resource "aws_vpc" "VPCs" {
+  for_each = var.vpc_configs
+  cidr_block = each.value.cidr_block
   instance_tenancy = "default"
+
+  tags = {
+    Name = each.key
+  }
+
 }
 
 resource "aws_internet_gateway" "gw" {
-  vpc_id = aws_vpc.VPC1.id
+  vpc_id = aws_vpc.VPCs["VPC1"].id
 
   tags = {
     Name = "main-igw"
@@ -37,7 +43,7 @@ resource "aws_internet_gateway" "gw" {
 # ============= Subnets =============
 resource "aws_subnet" "subnets" {
   for_each = var.subnets
-  vpc_id = aws_vpc.VPC1.id
+  vpc_id = aws_vpc.VPCs[each.value.VPC].id
   cidr_block = each.value.cidr_block
   availability_zone = each.value.az
   map_public_ip_on_launch = each.value.ip_publico
@@ -53,7 +59,7 @@ resource "aws_subnet" "subnets" {
 # Using dynamic for future hardcode mod
 resource "aws_network_acl" "acl_subnets" {
   for_each = local.ACLs
-  vpc_id = aws_vpc.VPC1.id                             
+  vpc_id = aws_vpc.VPCs["VPC1"].id                           
   subnet_ids = [aws_subnet.subnets[each.value.subnet_name].id]
   
   dynamic "egress" {
@@ -83,7 +89,7 @@ resource "aws_network_acl" "acl_subnets" {
 
 # ============= Route Table =============
 resource "aws_route_table" "public_route_table" {
-  vpc_id = aws_vpc.VPC1.id
+  vpc_id = aws_vpc.VPCs["VPC1"].id
   
   route {
     cidr_block = "0.0.0.0/0"
@@ -93,13 +99,13 @@ resource "aws_route_table" "public_route_table" {
 }
 
 resource "aws_route_table" "private_route_table" {
-  vpc_id = aws_vpc.VPC1.id
+  vpc_id = aws_vpc.VPCs["VPC1"].id
 }
 
 # ============= Route Table association =============
 resource "aws_route_table_association" "public_association_subnet_global" {
   for_each = {
-    for sub_a, sub_b in var.subnets : sub_a => sub_b if sub_b.ip_publico == true
+    for sub_a, sub_b in var.subnets : sub_a => sub_b if sub_b.ip_publico == true && sub_b.VPC == "VPC1"
   }
   route_table_id = aws_route_table.public_route_table.id
   subnet_id = aws_subnet.subnets[each.key].id
@@ -107,7 +113,7 @@ resource "aws_route_table_association" "public_association_subnet_global" {
 
 resource "aws_route_table_association" "private_association_subnet_global" {
   for_each = {
-    for sub_a, sub_b in var.subnets : sub_a => sub_b if sub_b.ip_publico == false
+    for sub_a, sub_b in var.subnets : sub_a => sub_b if sub_b.ip_publico == false && sub_b.VPC == "VPC1"
   }
   route_table_id = aws_route_table.private_route_table.id
   subnet_id = aws_subnet.subnets[each.key].id
@@ -118,7 +124,7 @@ resource "aws_route_table_association" "private_association_subnet_global" {
 # ============= Security Groups =============
 resource "aws_security_group" "sgs" {
   for_each = local.Security_groups
-  vpc_id = aws_vpc.VPC1.id
+  vpc_id = aws_vpc.VPCs["VPC1"].id
   name = each.key
 
   dynamic "ingress" {
