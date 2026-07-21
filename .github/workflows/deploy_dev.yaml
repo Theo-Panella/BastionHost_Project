@@ -43,5 +43,5 @@ jobs:
           terraform plan -no-color -out=tfplan > plan_terraform.txt
           cat plan_terraform.txt
 
-      - name: "terraform apply"
-        run: terraform apply tfplan
+      #- name: "terraform apply"
+      #  run: terraform apply tfplan
