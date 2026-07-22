@@ -29,20 +29,22 @@ locals {
         ingress = [
           # ============= Rule for Public connection =============
           {rule_no = 1, protocol = -1, action = "allow", cidr_block = "0.0.0.0/0", from_port = 0, to_port = 0}
-        ]
+        ],
       }
       "ACL_subnetB" = {
         subnet_name = "subnetB"
         egress = [ 
           # ============= Rule for Subnet A connection =============
           {rule_no = 1, protocol  = -1, action = "allow", cidr_block = var.subnets["subnetA"].cidr_block, from_port = 0, to_port = 0},
-          {rule_no = 2, protocol  = -1, action = "deny", cidr_block = var.subnets["subnetC"].cidr_block, from_port = 0, to_port = 0} 
+          {rule_no = 2, protocol  = -1, action = "allow", cidr_block = var.subnets["subnetA_VPC2"].cidr_block, from_port = 0, to_port = 0},
+          {rule_no = 3, protocol  = -1, action = "deny", cidr_block = var.subnets["subnetC"].cidr_block, from_port = 0, to_port = 0} 
         ],
         ingress = [
           # ============= Rule for Subnet A connection =============
           {rule_no = 1, protocol  = -1, action = "allow", cidr_block = var.subnets["subnetA"].cidr_block, from_port = 0, to_port = 0},
-          {rule_no = 2, protocol  = -1, action = "deny", cidr_block = var.subnets["subnetC"].cidr_block, from_port = 0, to_port = 0} 
-        ]
+          {rule_no = 2, protocol  = -1, action = "allow", cidr_block = var.subnets["subnetA_VPC2"].cidr_block, from_port = 0, to_port = 0},
+          {rule_no = 3, protocol  = -1, action = "deny", cidr_block = var.subnets["subnetC"].cidr_block, from_port = 0, to_port = 0} 
+        ],
       }
       "ACL_subnetC" = {
         subnet_name = "subnetC"
@@ -53,7 +55,18 @@ locals {
         ingress = [
           # ============= Rule for Public connection =============
           {rule_no = 1, protocol  = -1, action = "allow", cidr_block = "0.0.0.0/0", from_port = 0, to_port = 0}
-        ]
+        ],
+      }
+      "subnetA_VPC2" = {
+        subnet_name = "subnetA_VPC2"
+        egress = [ 
+          # ============= Rule for Public connection =============
+          {rule_no = 1, protocol  = -1, action = "allow", cidr_block = var.subnets["subnetB"].cidr_block, from_port = 0, to_port = 0} 
+        ],
+        ingress = [
+          # ============= Rule for Public connection =============
+          {rule_no = 1, protocol  = -1, action = "allow", cidr_block = var.subnets["subnetB"].cidr_block, from_port = 0, to_port = 0}
+        ],
       }
   }  
 }
@@ -71,6 +84,7 @@ variable "EC2_instances" {
         "Bastion" = {subnet = "subnetA" , sg="Bastion-Invasor"}
         "Invasor" = {subnet = "subnetC" , sg="Bastion-Invasor"}
         "Server_1" = {subnet = "subnetB", sg="Server_1"}
+        "Server_2" = {subnet = "subnetA_VPC2", sg = "Server_2"}
         # He will go to VPC 2 in the next commits "Server_2" = {subnet = "subnetB", sg = "Servers", cidr_blocks = ["0.0.0.0/0"]}
     }
 }
@@ -78,12 +92,25 @@ variable "EC2_instances" {
 locals {
   Security_groups = {
         "Bastion-Invasor" = { 
+          VPC = "VPC1"
           ingress = [ {from_port = 0, to_port = 0, protocol = -1, cidr_blocks = ["0.0.0.0/0"] } ],
           egress = [ {from_port = 0, to_port = 0, protocol = -1, cidr_blocks = ["0.0.0.0/0"] }]
           },
         "Server_1" = { 
-          ingress = [ {from_port = 0, to_port = 0, protocol = -1, cidr_blocks = [var.subnets["subnetA"].cidr_block] } ],
-          egress = [ {from_port = 0, to_port = 0, protocol = -1, cidr_blocks = [var.subnets["subnetA"].cidr_block] }]
+          VPC = "VPC1"
+          ingress = [ 
+            {from_port = 0, to_port = 0, protocol = -1, cidr_blocks = [var.subnets["subnetA"].cidr_block]},
+            {from_port = 0, to_port = 0, protocol = -1, cidr_blocks = [var.subnets["subnetA_VPC2"].cidr_block]}
+           ],
+          egress = [ 
+            {from_port = 0, to_port = 0, protocol = -1, cidr_blocks = [var.subnets["subnetA"].cidr_block]},
+            {from_port = 0, to_port = 0, protocol = -1, cidr_blocks = [var.subnets["subnetA_VPC2"].cidr_block]}
+          ]
+          }
+        "Server_2" = {
+          VPC = "VPC2"
+          ingress = [ {from_port = 0, to_port = 0, protocol = -1, cidr_blocks = [var.subnets["subnetB"].cidr_block] } ],
+          egress = [ {from_port = 0, to_port = 0, protocol = -1, cidr_blocks = [var.subnets["subnetB"].cidr_block] }]
           }
     }
   }
