@@ -59,7 +59,7 @@ resource "aws_subnet" "subnets" {
 # Using dynamic for future hardcode mod
 resource "aws_network_acl" "acl_subnets" {
   for_each = local.ACLs
-  vpc_id = aws_vpc.VPCs["VPC1"].id                           
+  vpc_id = aws_vpc.VPCs[var.subnets[each.value.subnet_name].VPC].id                           
   subnet_ids = [aws_subnet.subnets[each.value.subnet_name].id]
   
   dynamic "egress" {
@@ -99,11 +99,16 @@ resource "aws_route_table" "public_route_table" {
 }
 
 resource "aws_route_table" "private_route_table" {
-  vpc_id = aws_vpc.VPCs["VPC1"].id
+  for_each = var.vpc_configs
+  vpc_id = aws_vpc.VPCs[each.key].id
+
+  tags ={
+    Name = "${each.key}_route_table"
+  }
 }
 
 # ============= Route Table association =============
-resource "aws_route_table_association" "public_association_subnet_global" {
+resource "aws_route_table_association" "public_association_VPC1" {
   for_each = {
     for sub_a, sub_b in var.subnets : sub_a => sub_b if sub_b.ip_publico == true && sub_b.VPC == "VPC1"
   }
@@ -111,11 +116,11 @@ resource "aws_route_table_association" "public_association_subnet_global" {
   subnet_id = aws_subnet.subnets[each.key].id
 }
 
-resource "aws_route_table_association" "private_association_subnet_global" {
+resource "aws_route_table_association" "private_association" {
   for_each = {
-    for sub_a, sub_b in var.subnets : sub_a => sub_b if sub_b.ip_publico == false && sub_b.VPC == "VPC1"
+    for sub_a, sub_b in var.subnets : sub_a => sub_b if sub_b.ip_publico == false
   }
-  route_table_id = aws_route_table.private_route_table.id
+  route_table_id = aws_route_table.private_route_table[each.value.VPC].id
   subnet_id = aws_subnet.subnets[each.key].id
 }
 
@@ -124,7 +129,7 @@ resource "aws_route_table_association" "private_association_subnet_global" {
 # ============= Security Groups =============
 resource "aws_security_group" "sgs" {
   for_each = local.Security_groups
-  vpc_id = aws_vpc.VPCs["VPC1"].id
+  vpc_id = aws_vpc.VPCs[each.value.VPC].id
   name = each.key
 
   dynamic "ingress" {
