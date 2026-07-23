@@ -250,7 +250,7 @@ This confirms the network isolation is working correctly.
   - [X] **Named Terraform outputs** (`outputs.tf`) — expose the Bastion / Invasor
     public IPs and Server_1 private IP instead of reading them from the console
   - [X] **VPC peering** between VPC1 and VPC2 (with routes so Server_1 ↔ Server_2 works)
-  - [ ] **AWS Network Firewall** policy
+  - [ ] **AWS Network Firewall policy ⚠️Need to do it out of free plan⚠️**
 
 ---
 
