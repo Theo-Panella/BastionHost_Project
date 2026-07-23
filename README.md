@@ -8,7 +8,7 @@ layered network controls.
 > ⚠️ **Educational use only.** Some configurations (shared SSH key, broad SG rules)
 > are intentionally simplified and are **not recommended for production environments**.
 > A CI security scan (Trivy) flags these on every pull request — see
-> [Security Scanning](#security-scanning-trivy) and the [ROADMAP](ROADMAP.md).
+> [Security Scanning](#security-scanning-trivy) and the [ROADMAP](#roadmap).
 
 ---
 
@@ -100,9 +100,10 @@ State lives in S3 instead of a local `terraform.tfstate` file:
 
 ```hcl
 backend "s3" {
-  bucket = "aws-panella-bucket2"
-  key    = "terraform.tfstate"
-  region = "us-east-1"
+  bucket       = "aws-panella-bucket2"
+  key          = "terraform.tfstate"
+  region       = "us-east-1"
+  use_lockfile = true
 }
 ```
 
@@ -123,14 +124,18 @@ create duplicate infrastructure. With shared state:
 - **No drift between environments** — a local `terraform plan` reflects the real state
   of the deployed infrastructure, not a stale local copy.
 
-### ⚠️ No state locking
+### State locking (S3 native)
 
-This backend has **no DynamoDB lock table and no S3 native locking** (`use_lockfile`
-requires Terraform >= 1.10; the pipeline pins 1.9.0). Two `apply` operations running at
-the same time can corrupt the state file.
+State locking is **enabled** via S3 native locking (`use_lockfile = true` in
+`terraform.tf`). This feature requires Terraform >= 1.10; the pipeline pins 1.11, so
+both CI and a compatible local Terraform acquire a lock (a `.tflock` object in the
+bucket) for the duration of a `plan`/`apply`. There is **no DynamoDB lock table** —
+locking is handled entirely by S3.
 
-In practice: **don't run a local `apply`/`destroy` while a pipeline run is in flight.**
-Check the Actions tab first.
+In practice this prevents two `apply` operations from writing state at the same time:
+if a run is already in flight, a second one waits for (or fails to acquire) the lock
+instead of corrupting the state file. If a local run reports a lock it cannot acquire,
+check the Actions tab — a pipeline run is probably holding it.
 
 ---
 
@@ -162,9 +167,9 @@ OIDC role assumption (`secrets.ARN`) — no static keys are stored.
 
 | Workflow          | Trigger                | Jobs / Steps                                             | Applies? |
 |-------------------|------------------------|---------------------------------------------------------|----------|
-| `pr_main.yaml`    | Pull request → `main`  | **Trivy** scan → `init` → `validate` → `plan`           | No — gate + review |
-| `deploy_dev.yaml` | Push to `dev`          | `init` → `plan`                                         | No — plan only |
-| `deploy_main.yaml`| Push to `main`         | `init` → `validate` → `plan` → **`apply`**              | Yes |
+| `pr_main.yaml`    | Pull request → `main`  | **Trivy** scan → `init` → `fmt -check` → `validate` → `plan`         | No — gate + review |
+| `deploy_dev.yaml` | Push to `dev`          | `init` → `fmt -check` → `plan`                                       | No — plan only |
+| `deploy_main.yaml`| Push to `main`         | `init` → `fmt -check` → `validate` → `plan` → **`apply`**            | Yes |
 
 The PR pipeline runs in two dependent jobs: the `Configuration` job (`terraform
 plan`) has `needs: Trivy`, so **the plan only runs if the security scan passes**.
@@ -182,7 +187,7 @@ Every PR against `main` runs [Trivy](https://trivy.dev) in IaC (`config`) mode:
 
 Known findings are intentional for this lab (bastion SG open to `0.0.0.0/0`,
 public subnets, no IMDSv2/EBS encryption) — hardening is tracked in the
-[ROADMAP](ROADMAP.md).
+[ROADMAP](#roadmap).
 
 ---
 
@@ -318,7 +323,7 @@ IP and accepts traffic **only** from subnetB, so this jump path
   (public subnets, etc.) so the gate stays meaningful
 
 ### CI/CD
-- [ ] Add `terraform fmt -check` to the PR pipeline
+- [X] Add `terraform fmt -check` to the PR pipeline
 - [ ] Also run the Trivy scan on `push` to `main` so alerts populate the default
   branch view in the Security tab
 - [ ] Mark the Trivy job as a **required status check** on the `main` branch
