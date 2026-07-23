@@ -7,6 +7,8 @@ layered network controls.
 
 > ⚠️ **Educational use only.** Some configurations (shared SSH key, broad SG rules)
 > are intentionally simplified and are **not recommended for production environments**.
+> A CI security scan (Trivy) flags these on every pull request — see
+> [Security Scanning](#security-scanning-trivy) and the [ROADMAP](#roadmap).
 
 ---
 
@@ -14,7 +16,12 @@ layered network controls.
 
 ![Infrastructure Diagram](Diagrama-Infraestrutura.png)
 
-### VPC — `192.168.0.0/24` (us-west-2)
+The stack provisions **two VPCs** in `us-west-2`. VPC1 holds the full
+bastion/jump-server scenario; VPC2 hosts a second private server (`Server_2`),
+reachable from VPC1 through a **VPC peering connection** (see
+[VPC Peering](#vpc-peering-vpc1--vpc2) below).
+
+### VPC1 — `192.168.0.0/24`
 
 | Resource | Name    | CIDR             | Type    | Instance |
 |----------|---------|------------------|---------|----------|
@@ -22,21 +29,55 @@ layered network controls.
 | Subnet B | subnetB | 192.168.0.64/26  | Private | Server_1 |
 | Subnet C | subnetC | 192.168.0.128/26 | Public  | Invasor  |
 
+### VPC2 — `172.18.0.0/24`
+
+| Resource | Name         | CIDR           | Type    | Instance |
+|----------|--------------|----------------|---------|----------|
+| Subnet A | subnetA_VPC2 | 172.18.0.0/26  | Private | Server_2 |
+
+> VPC2 now has its own private route table, a NACL and a security group scoped
+> to it, and hosts `Server_2`. It has **no internet gateway** — the only way in
+> or out is the peering connection with VPC1, restricted to subnetB (Server_1).
+
+### VPC Peering (VPC1 ↔ VPC2)
+
+An `aws_vpc_peering_connection` links the two VPCs (`auto_accept = true`, both
+VPCs live in the same account/region). Two `aws_route` entries make the private
+subnets routable across it:
+
+| Route          | Route table              | Destination                | Target  |
+|----------------|--------------------------|----------------------------|---------|
+| `vpc1_to_vpc2` | private_route_table VPC1 | 172.18.0.0/24 (VPC2 CIDR)  | peering |
+| `vpc2_to_vpc1` | private_route_table VPC2 | 192.168.0.0/24 (VPC1 CIDR) | peering |
+
+Routing alone doesn't open traffic: the NACLs and security groups below only
+allow **subnetB ↔ subnetA_VPC2**, so the peering effectively connects
+`Server_1` and `Server_2` and nothing else.
+
 ### NACL Rules
 
-| NACL        | Direction | Rule | Action | Target                          |
-|-------------|-----------|------|--------|---------------------------------|
-| ACL_subnetA | in/out    | 1    | allow  | 0.0.0.0/0                       |
-| ACL_subnetB | in/out    | 1    | allow  | 192.168.0.0/26 (subnetA)        |
-| ACL_subnetB | in/out    | 2    | deny   | 192.168.0.128/26 (subnetC)      |
-| ACL_subnetC | in/out    | 1    | allow  | 0.0.0.0/0                       |
+| NACL         | VPC  | Direction | Rule | Action | Target                          |
+|--------------|------|-----------|------|--------|---------------------------------|
+| ACL_subnetA  | VPC1 | in/out    | 1    | allow  | 0.0.0.0/0                       |
+| ACL_subnetB  | VPC1 | in/out    | 1    | allow  | 192.168.0.0/26 (subnetA)        |
+| ACL_subnetB  | VPC1 | in/out    | 2    | allow  | 172.18.0.0/26 (subnetA_VPC2)    |
+| ACL_subnetB  | VPC1 | in/out    | 3    | deny   | 192.168.0.128/26 (subnetC)      |
+| ACL_subnetC  | VPC1 | in/out    | 1    | allow  | 0.0.0.0/0                       |
+| subnetA_VPC2 | VPC2 | in/out    | 1    | allow  | 192.168.0.64/26 (subnetB)       |
 
 ### Security Groups
 
-| Group           | Instances        | Ingress / Egress         |
-|-----------------|------------------|--------------------------|
-| Bastion-Invasor | Bastion, Invasor | All traffic (0.0.0.0/0)  |
-| Server_1        | Server_1         | subnetB only             |
+| Group           | VPC  | Instances        | Ingress / Egress                                        |
+|-----------------|------|------------------|---------------------------------------------------------|
+| Bastion-Invasor | VPC1 | Bastion, Invasor | All traffic (0.0.0.0/0)                                 |
+| Server_1        | VPC1 | Server_1         | subnetA (`192.168.0.0/26`) + subnetA_VPC2 (`172.18.0.0/26`) |
+| Server_2        | VPC2 | Server_2         | subnetB only (`192.168.0.64/26`)                        |
+
+> Server_1 only accepts traffic from **subnetA** (the Bastion subnet) and
+> **subnetA_VPC2** (Server_2, over the peering). Combined with `ACL_subnetB`
+> rule 3, which denies subnetC, this is what blocks the Invasor from reaching
+> Server_1. Server_2 in turn only talks to **subnetB** — it is unreachable from
+> the public subnets entirely.
 
 ---
 
@@ -45,10 +86,11 @@ layered network controls.
 - **Terraform** >= 1.2 / AWS provider ~> 5.92
 - **AWS S3** — remote state backend
 - **AWS EC2** — Amazon Linux 2023, t3.micro
-- **AWS VPC** — subnets, route tables, internet gateway
+- **AWS VPC** — two VPCs, subnets, route tables, internet gateway, VPC peering
 - **AWS NACLs** — subnet-level traffic control
 - **AWS Security Groups** — instance-level traffic control
 - **GitHub Actions** — OIDC-authenticated plan/apply pipeline
+- **Trivy** — Infrastructure-as-Code security scanning on every PR (SARIF)
 
 ---
 
@@ -58,9 +100,10 @@ State lives in S3 instead of a local `terraform.tfstate` file:
 
 ```hcl
 backend "s3" {
-  bucket = "aws-panella-bucket2"
-  key    = "terraform.tfstate"
-  region = "us-east-1"
+  bucket       = "aws-panella-bucket2"
+  key          = "terraform.tfstate"
+  region       = "us-east-1"
+  use_lockfile = true
 }
 ```
 
@@ -81,14 +124,18 @@ create duplicate infrastructure. With shared state:
 - **No drift between environments** — a local `terraform plan` reflects the real state
   of the deployed infrastructure, not a stale local copy.
 
-### ⚠️ No state locking
+### State locking (S3 native)
 
-This backend has **no DynamoDB lock table and no S3 native locking** (`use_lockfile`
-requires Terraform >= 1.10; the pipeline pins 1.9.0). Two `apply` operations running at
-the same time can corrupt the state file.
+State locking is **enabled** via S3 native locking (`use_lockfile = true` in
+`terraform.tf`). This feature requires Terraform >= 1.10; the pipeline pins 1.11, so
+both CI and a compatible local Terraform acquire a lock (a `.tflock` object in the
+bucket) for the duration of a `plan`/`apply`. There is **no DynamoDB lock table** —
+locking is handled entirely by S3.
 
-In practice: **don't run a local `apply`/`destroy` while a pipeline run is in flight.**
-Check the Actions tab first.
+In practice this prevents two `apply` operations from writing state at the same time:
+if a run is already in flight, a second one waits for (or fails to acquire) the lock
+instead of corrupting the state file. If a local run reports a lock it cannot acquire,
+check the Actions tab — a pipeline run is probably holding it.
 
 ---
 
@@ -113,20 +160,45 @@ is in `us-east-1`; credentials need access to both that region (for state) and `
 
 ---
 
+## CI/CD Pipelines
+
+Three GitHub Actions workflows, one per branch/event. All authenticate to AWS via
+OIDC role assumption (`secrets.ARN`) — no static keys are stored.
+
+| Workflow          | Trigger                | Jobs / Steps                                             | Applies? |
+|-------------------|------------------------|---------------------------------------------------------|----------|
+| `pr_main.yaml`    | Pull request → `main`  | **Trivy** scan → `init` → `fmt -check` → `validate` → `plan`         | No — gate + review |
+| `deploy_dev.yaml` | Push to `dev`          | `init` → `fmt -check` → `plan`                                       | No — plan only |
+| `deploy_main.yaml`| Push to `main`         | `init` → `fmt -check` → `validate` → `plan` → **`apply`**            | Yes |
+
+The PR pipeline runs in two dependent jobs: the `Configuration` job (`terraform
+plan`) has `needs: Trivy`, so **the plan only runs if the security scan passes**.
+Merging to `main` then triggers `deploy_main.yaml`, which applies automatically.
+
+---
+
+## Security Scanning (Trivy)
+
+Every PR against `main` runs [Trivy](https://trivy.dev) in IaC (`config`) mode:
+
+- **Gate:** `CRITICAL,HIGH` findings fail the PR and block the `plan` job.
+- **Reporting:** results go as SARIF to **GitHub Security tab → Code scanning**
+  (filter by the PR branch).
+
+Known findings are intentional for this lab (bastion SG open to `0.0.0.0/0`,
+public subnets, no IMDSv2/EBS encryption) — hardening is tracked in the
+[ROADMAP](#roadmap).
+
+---
+
 ## Deploy
 
 Both paths operate on the same S3 state, so you can mix them freely.
 
 ### Via workflow (GitHub Actions)
 
-| Branch | Steps                                     | Applies? |
-|--------|-------------------------------------------|----------|
-| `dev`  | `init` → `plan`                           | No — plan only, for review |
-| `main` | `init` → `validate` → `plan` → **confirm** → `apply` | Yes, after manual approval |
-
-The `main` pipeline pauses and renders the plan in an interactive prompt. Nothing is
-applied unless you explicitly check `true`. Credentials come from an OIDC role assumption
-(`secrets.ARN`) — no static keys are stored.
+Open a pull request to `main` to get a security scan + plan, then merge to apply.
+See [CI/CD Pipelines](#cicd-pipelines) above for the full matrix.
 
 ### Local
 
@@ -149,15 +221,27 @@ Confirm no workflow run is active before doing this (see the state-locking note 
 
 ---
 
-## Testing
+## Terraform Outputs
 
-First, get the public IPs of your instances:
+Named outputs are defined in `outputs.tf` — after an `apply` (or anytime via
+`terraform output`) you get the IPs of every instance without opening the console:
+
+| Output                | Content                                            |
+|-----------------------|----------------------------------------------------|
+| `instance_ip`         | Map of instance name → **public IP** (private-only instances show empty) |
+| `instance_private_ip` | Map of instance name → **private IP**              |
 
 ```bash
-terraform output
+terraform output instance_ip
+terraform output instance_private_ip
 ```
 
-Or from the AWS console: EC2 → Instances.
+---
+
+## Testing
+
+Get the IPs of your instances from the [Terraform outputs](#terraform-outputs)
+above (or from the AWS console, EC2 → Instances).
 
 ### 1. Connect to Bastion (jump server)
 
@@ -187,34 +271,64 @@ Then try to reach Server_1:
 [ec2-user@invasor ~]$ ssh ec2-user@<Server_1_Private_IP>
 ```
 
-The connection will hang indefinitely — blocked by ACL_subnetB rule 2 (deny from subnetC).
+The connection will hang indefinitely — blocked by ACL_subnetB rule 3 (deny from subnetC).
 This confirms the network isolation is working correctly.
 
----
+### 4. Cross-VPC: reach Server_2 through the peering
 
-## Roadmap
-
-- [ ] State locking (DynamoDB table, or Terraform >= 1.10 + `use_lockfile`)
-- [ ] AWS Network Firewall policy
-- [ ] VPC_2 with a second Server instance
-- [ ] VPC Peering between VPC_1 and VPC_2
-- [X] S3 remote backend for shared state
-- [X] GitHub Actions pipeline for automated `terraform apply`
-
----
-
-## Outputs
-
-After `terraform apply`, key information is available via:
+From Server_1 (reached via the Bastion in step 2), hop to Server_2 in VPC2:
 
 ```bash
-terraform output -json
+[ec2-user@server_1 ~]$ ssh ec2-user@<Server_2_Private_IP>
 ```
 
-Useful fields:
-- `bastion_public_ip` — the Bastion host's public IP
-- `invasor_public_ip` — the Invasor instance's public IP
-- `server_1_private_ip` — the Server_1 private IP (reachable only from Bastion)
+A successful login confirms the peering routes (`vpc1_to_vpc2` / `vpc2_to_vpc1`)
+and the subnetB ↔ subnetA_VPC2 NACL/SG rules are working. Server_2 has no public
+IP and accepts traffic **only** from subnetB, so this jump path
+(Bastion → Server_1 → Server_2) is the only way to reach it.
+
+---
+
+# Roadmap
+
+## 🚧 In progress
+
+- **VPC2 build-out** — the VPC and `subnetA_VPC2` exist, but there is no internet
+  gateway, route table, NACL or security group scoped to VPC2 yet, so it has no
+  instances or connectivity. Next steps:
+  - [X] Route tables + associations for VPC2 subnets
+  - [X] NACLs / security groups scoped to VPC2
+  - [X] A second Server instance (`Server_2`) in VPC2
+  - [X] **Named Terraform outputs** (`outputs.tf`) — expose the Bastion / Invasor
+    public IPs and Server_1 private IP instead of reading them from the console
+  - [X] **VPC peering** between VPC1 and VPC2 (with routes so Server_1 ↔ Server_2 works)
+  - [X] **State locking** — enable `use_lockfile` on the S3 backend
+  - [ ] **AWS Network Firewall policy ⚠️Need to do it out of free plan⚠️**
+  - [ ] **SSM Session Manager** instead of SSH connection
+
+---
+
+## ⏳ Planned
+
+### Security hardening (from Trivy findings)
+- [ ] **IMDSv2** — enforce `metadata_options { http_tokens = "required" }` on
+  `aws_instance` (Trivy AVD-AWS-0028)
+- [ ] **EBS encryption** — `root_block_device { encrypted = true }`
+  (Trivy AVD-AWS-0131)
+- [ ] **Narrow the Bastion security group** — restrict ingress from
+  `0.0.0.0/0` (all ports) to TCP/22, ideally from a known admin CIDR
+  (Trivy AVD-AWS-0107)
+- [ ] **VPC Flow Logs** (Trivy AVD-AWS-0178)
+- [ ] Add `.trivyignore` for the findings that are intentional in this lab
+  (public subnets, etc.) so the gate stays meaningful
+
+### CI/CD
+- [X] Add `terraform fmt -check` to the PR pipeline
+- [ ] Also run the Trivy scan on `push` to `main` so alerts populate the default
+  branch view in the Security tab
+- [ ] Mark the Trivy job as a **required status check** on the `main` branch
+  protection rule
+
 
 ---
 
