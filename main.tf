@@ -3,16 +3,16 @@ provider "aws" {
 }
 
 # ============= AMI =============
-data "aws_ami" "linux"{
+data "aws_ami" "linux" {
   most_recent = var.instance_configurations.most_recent
-  owners = ["amazon"]
+  owners      = ["amazon"]
 
   filter {
     name   = "name"
-    values = ["al2023-ami-*-x86_64"]  # Amazon Linux 2023
+    values = ["al2023-ami-*-x86_64"] # Amazon Linux 2023
   }
 
-    filter {
+  filter {
     name   = "virtualization-type"
     values = ["hvm"]
   }
@@ -22,8 +22,8 @@ data "aws_ami" "linux"{
 
 # ============= VPC =============
 resource "aws_vpc" "VPCs" {
-  for_each = var.vpc_configs
-  cidr_block = each.value.cidr_block
+  for_each         = var.vpc_configs
+  cidr_block       = each.value.cidr_block
   instance_tenancy = "default"
 
   tags = {
@@ -42,10 +42,10 @@ resource "aws_internet_gateway" "gw" {
 
 # ============= Subnets =============
 resource "aws_subnet" "subnets" {
-  for_each = var.subnets
-  vpc_id = aws_vpc.VPCs[each.value.VPC].id
-  cidr_block = each.value.cidr_block
-  availability_zone = each.value.az
+  for_each                = var.subnets
+  vpc_id                  = aws_vpc.VPCs[each.value.VPC].id
+  cidr_block              = each.value.cidr_block
+  availability_zone       = each.value.az
   map_public_ip_on_launch = each.value.ip_publico
 
   tags = {
@@ -58,10 +58,10 @@ resource "aws_subnet" "subnets" {
 # ============= ACLs =============
 # Using dynamic for future hardcode mod
 resource "aws_network_acl" "acl_subnets" {
-  for_each = local.ACLs
-  vpc_id = aws_vpc.VPCs[var.subnets[each.value.subnet_name].VPC].id                           
+  for_each   = local.ACLs
+  vpc_id     = aws_vpc.VPCs[var.subnets[each.value.subnet_name].VPC].id
   subnet_ids = [aws_subnet.subnets[each.value.subnet_name].id]
-  
+
   dynamic "egress" {
     for_each = each.value.egress
     content {
@@ -90,7 +90,7 @@ resource "aws_network_acl" "acl_subnets" {
 # ============= Route Table =============
 resource "aws_route_table" "public_route_table" {
   vpc_id = aws_vpc.VPCs["VPC1"].id
-  
+
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.gw.id
@@ -100,9 +100,9 @@ resource "aws_route_table" "public_route_table" {
 
 resource "aws_route_table" "private_route_table" {
   for_each = var.vpc_configs
-  vpc_id = aws_vpc.VPCs[each.key].id
+  vpc_id   = aws_vpc.VPCs[each.key].id
 
-  tags ={
+  tags = {
     Name = "${each.key}_route_table"
   }
 }
@@ -113,7 +113,7 @@ resource "aws_route_table_association" "public_association_VPC1" {
     for sub_a, sub_b in var.subnets : sub_a => sub_b if sub_b.ip_publico == true && sub_b.VPC == "VPC1"
   }
   route_table_id = aws_route_table.public_route_table.id
-  subnet_id = aws_subnet.subnets[each.key].id
+  subnet_id      = aws_subnet.subnets[each.key].id
 }
 
 resource "aws_route_table_association" "private_association" {
@@ -121,7 +121,7 @@ resource "aws_route_table_association" "private_association" {
     for sub_a, sub_b in var.subnets : sub_a => sub_b if sub_b.ip_publico == false
   }
   route_table_id = aws_route_table.private_route_table[each.value.VPC].id
-  subnet_id = aws_subnet.subnets[each.key].id
+  subnet_id      = aws_subnet.subnets[each.key].id
 }
 
 # ============= Instances =============
@@ -129,25 +129,25 @@ resource "aws_route_table_association" "private_association" {
 # ============= Security Groups =============
 resource "aws_security_group" "sgs" {
   for_each = local.Security_groups
-  vpc_id = aws_vpc.VPCs[each.value.VPC].id
-  name = each.key
+  vpc_id   = aws_vpc.VPCs[each.value.VPC].id
+  name     = each.key
 
   dynamic "ingress" {
     for_each = each.value.ingress
-      content {
-        from_port   = ingress.value.from_port
-        to_port     = ingress.value.to_port
-        protocol    = ingress.value.protocol
-        cidr_blocks = ingress.value.cidr_blocks
+    content {
+      from_port   = ingress.value.from_port
+      to_port     = ingress.value.to_port
+      protocol    = ingress.value.protocol
+      cidr_blocks = ingress.value.cidr_blocks
     }
   }
   dynamic "egress" {
     for_each = each.value.egress
-      content {
-        from_port   = egress.value.from_port
-        to_port     = egress.value.to_port
-        protocol    = egress.value.protocol
-        cidr_blocks = egress.value.cidr_blocks
+    content {
+      from_port   = egress.value.from_port
+      to_port     = egress.value.to_port
+      protocol    = egress.value.protocol
+      cidr_blocks = egress.value.cidr_blocks
     }
   }
 }
@@ -155,13 +155,13 @@ resource "aws_security_group" "sgs" {
 
 # ============= Instances configs =============
 resource "aws_instance" "instances" {
-  
-  for_each = var.EC2_instances
-  ami = data.aws_ami.linux.id
-  instance_type = var.instance_configurations.instance_type
-  subnet_id = aws_subnet.subnets[each.value.subnet].id
+
+  for_each               = var.EC2_instances
+  ami                    = data.aws_ami.linux.id
+  instance_type          = var.instance_configurations.instance_type
+  subnet_id              = aws_subnet.subnets[each.value.subnet].id
   vpc_security_group_ids = [aws_security_group.sgs[each.value.sg].id]
-  key_name = aws_key_pair.key_connection.key_name
+  key_name               = aws_key_pair.key_connection.key_name
 
   tags = {
     Name = each.key
@@ -171,12 +171,12 @@ resource "aws_instance" "instances" {
 # ============= Chave SSH para conexão =============
 resource "aws_key_pair" "key_connection" {
   key_name   = "SSH Key"
-  public_key = file(".ssh/terraform-key.pub") 
+  public_key = file(".ssh/terraform-key.pub")
 }
 
 # ============= VPC Peering =============
 resource "aws_vpc_peering_connection" "vpc_peering" {
-  vpc_id = aws_vpc.VPCs["VPC1"].id
+  vpc_id      = aws_vpc.VPCs["VPC1"].id
   peer_vpc_id = aws_vpc.VPCs["VPC2"].id
   auto_accept = true
 }
