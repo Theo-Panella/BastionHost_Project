@@ -297,10 +297,9 @@ IP and accepts traffic **only** from subnetB, so this jump path
   - [X] **Named Terraform outputs** (`outputs.tf`) — expose the Bastion / Invasor
     public IPs and Server_1 private IP instead of reading them from the console
   - [X] **VPC peering** between VPC1 and VPC2 (with routes so Server_1 ↔ Server_2 works)
+  - [X] **State locking** — enable `use_lockfile` on the S3 backend
   - [ ] **AWS Network Firewall policy ⚠️Need to do it out of free plan⚠️**
   - [ ] **SSM Session Manager** instead of SSH connection
-  - [ ] **State locking** — DynamoDB lock table, or bump to Terraform >= 1.10 and
-        enable `use_lockfile` on the S3 backend
 
 ---
 
