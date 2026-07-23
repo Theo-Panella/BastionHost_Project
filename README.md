@@ -244,23 +244,23 @@ This confirms the network isolation is working correctly.
 - **VPC2 build-out** — the VPC and `subnetA_VPC2` exist, but there is no internet
   gateway, route table, NACL or security group scoped to VPC2 yet, so it has no
   instances or connectivity. Next steps:
-  - [ ] Route tables + associations for VPC2 subnets
-  - [ ] NACLs / security groups scoped to VPC2
-  - [ ] A second Server instance (`Server_2`) in VPC2
+  - [X] Route tables + associations for VPC2 subnets
+  - [X] NACLs / security groups scoped to VPC2
+  - [X] A second Server instance (`Server_2`) in VPC2
+  - [X] **Named Terraform outputs** (`outputs.tf`) — expose the Bastion / Invasor
+    public IPs and Server_1 private IP instead of reading them from the console
+  - [X] **VPC peering** between VPC1 and VPC2 (with routes so Server_1 ↔ Server_2 works)
+  - [ ] **AWS Network Firewall** policy
 
 ---
 
 ## ⏳ Planned
 
 ### Networking
-- [ ] **VPC peering** between VPC1 and VPC2 (with routes so Server_1 ↔ Server_2 works)
-- [ ] **AWS Network Firewall** policy
 
 ### Reliability
 - [ ] **State locking** — DynamoDB lock table, or bump to Terraform >= 1.10 and
   enable `use_lockfile` on the S3 backend
-- [ ] **Named Terraform outputs** (`outputs.tf`) — expose the Bastion / Invasor
-  public IPs and Server_1 private IP instead of reading them from the console
 
 ### Security hardening (from Trivy findings)
 - [ ] **IMDSv2** — enforce `metadata_options { http_tokens = "required" }` on

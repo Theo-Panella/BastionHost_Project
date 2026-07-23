@@ -173,3 +173,24 @@ resource "aws_key_pair" "key_connection" {
   key_name   = "SSH Key"
   public_key = file(".ssh/terraform-key.pub") 
 }
+
+# ============= VPC Peering =============
+resource "aws_vpc_peering_connection" "vpc_peering" {
+  vpc_id = aws_vpc.VPCs["VPC1"].id
+  peer_vpc_id = aws_vpc.VPCs["VPC2"].id
+  auto_accept = true
+}
+
+# ============= VPC Peering routes =============
+resource "aws_route" "vpc1_to_vpc2" {
+  route_table_id            = aws_route_table.private_route_table["VPC1"].id
+  destination_cidr_block    = var.vpc_configs.VPC2.cidr_block
+  vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peering.id
+}
+
+resource "aws_route" "vpc2_to_vpc1" {
+  route_table_id            = aws_route_table.private_route_table["VPC2"].id
+  destination_cidr_block    = var.vpc_configs.VPC1.cidr_block
+  vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peering.id
+}
+
