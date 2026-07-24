@@ -24,8 +24,7 @@ jobs:
           exit-code: '1' # Fails the pipeline if issues are discovered
           format: 'sarif'
           output: 'trivy-results.sarif'
-          args: '--skip-version-check'
-    
+
       - name: Show trivy-results.sarif
         run: cat trivy-results.sarif
 
