@@ -17,6 +17,8 @@ jobs:
 
       - name: Run Trivy IaC Scanner
         uses: aquasecurity/trivy-action@v0.36.0 # Match latest verified action tag
+        env:
+          TRIVY_SKIP_VERSION_CHECK: "true"
         with:
           scan-type: 'config'
           scan-ref: '.'
