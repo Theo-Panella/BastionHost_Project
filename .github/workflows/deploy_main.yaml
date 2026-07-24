@@ -25,7 +25,7 @@ jobs:
           exit-code: '1' # Fails the pipeline if issues are discovered
           format: 'sarif'
           output: 'trivy-results.sarif'
-          trivy-config: '.trivyignore'  
+          trivy-config: '--ignorefile .trivyignore'  
 
       - name: Show trivy-results.sarif
         run: cat trivy-results.sarif
