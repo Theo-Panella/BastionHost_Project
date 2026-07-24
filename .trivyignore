@@ -2,14 +2,14 @@
 AVD-AWS-0104
 
 # EBS unencrypted
-ADV-AWS-0131
+AVD-AWS-0131
 
 # EC2 instance does not enforce IMDSv2 session tokens
-ADV-AWS-0028
+AVD-AWS-0028
 
 # Subnet public IP
-ADV-AWS-0164
+AVD-AWS-0164
 
 # unrestricted SG rules to SSH 
-ADV-AWS-0107
+AVD-AWS-0107
 
