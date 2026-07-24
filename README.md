@@ -150,6 +150,31 @@ Routing alone doesn't open traffic: the NACLs and security groups below only
 allow **subnetB ↔ subnetA_VPC2**, so the peering effectively connects
 `Server_1` and `Server_2` and nothing else.
 
+### VPC2 — `172.18.0.0/24`
+
+| Resource | Name         | CIDR           | Type    | Instance |
+|----------|--------------|----------------|---------|----------|
+| Subnet A | subnetA_VPC2 | 172.18.0.0/26  | Private | Server_2 |
+
+> VPC2 now has its own private route table, a NACL and a security group scoped
+> to it, and hosts `Server_2`. It has **no internet gateway** — the only way in
+> or out is the peering connection with VPC1, restricted to subnetB (Server_1).
+
+### VPC Peering (VPC1 ↔ VPC2)
+
+An `aws_vpc_peering_connection` links the two VPCs (`auto_accept = true`, both
+VPCs live in the same account/region). Two `aws_route` entries make the private
+subnets routable across it:
+
+| Route          | Route table              | Destination                | Target  |
+|----------------|--------------------------|----------------------------|---------|
+| `vpc1_to_vpc2` | private_route_table VPC1 | 172.18.0.0/24 (VPC2 CIDR)  | peering |
+| `vpc2_to_vpc1` | private_route_table VPC2 | 192.168.0.0/24 (VPC1 CIDR) | peering |
+
+Routing alone doesn't open traffic: the NACLs and security groups below only
+allow **subnetB ↔ subnetA_VPC2**, so the peering effectively connects
+`Server_1` and `Server_2` and nothing else.
+
 ### NACL Rules
 
 | NACL         | VPC  | Direction | Rule | Action | Target                          |
@@ -415,7 +440,7 @@ IP and accepts traffic **only** from subnetB, so this jump path
   `0.0.0.0/0` (all ports) to TCP/22, ideally from a known admin CIDR
   (Trivy AVD-AWS-0107)
 - [ ] **VPC Flow Logs** (Trivy AVD-AWS-0178)
-- [ ] Add `.trivyignore` for the findings that are intentional in this lab
+- [X] Add `.trivyignore` for the findings that are intentional in this lab
   (public subnets, etc.) so the gate stays meaningful
 
 ### CI/CD
