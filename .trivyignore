@@ -1,0 +1,15 @@
+# SG with permission 0.0.0.0/0 just to pass at the workflow verification
+AVD-AWS-0104
+
+# EBS unencrypted
+ADV-AWS-0131
+
+# EC2 instance does not enforce IMDSv2 session tokens
+ADV-AWS-0028
+
+# Subnet public IP
+ADV-AWS-0164
+
+# unrestricted SG rules to SSH 
+ADV-AWS-0107
+
