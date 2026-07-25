@@ -14,10 +14,12 @@ layered network controls.
 
 ## Global Architecture
 
-An end-to-end view of the project: at [Complete Architecture file](complete_architecture.md) from the **commit/push to `main`**, through the
-**GitHub Actions pipeline** and the **Terraform S3 remote state (with native locking)**,
-down to the **complete infrastructure provisioned on AWS** — two peered VPCs, subnets,
-NACLs, security groups and EC2 instances.
+For an end-to-end view of the project, see the
+[Complete Architecture file](complete_architecture.md). It traces the flow from the
+**commit/push to `main`**, through the **GitHub Actions pipeline** and the
+**Terraform S3 remote state (with native locking)**, down to the **complete
+infrastructure provisioned on AWS** — two peered VPCs, subnets, NACLs, security
+groups and EC2 instances.
 
 ## Resume Architecture
 
@@ -50,11 +52,12 @@ flowchart TD
     %% ===================== DEPLOY PIPELINE =====================
     subgraph WF["⚙️ deploy_main.yaml — deploy"]
         direction TB
+        dtrivy["Trivy IaC scan (gate)"]
         auth["AWS auth (OIDC) + setup-terraform"]
         tinit["terraform init"]
         tplan["terraform plan"]
         tapply["terraform apply"]
-        auth --> tinit --> tplan --> tapply
+        dtrivy -->|"needs: Trivy"| auth --> tinit --> tplan --> tapply
     end
 
     %% ===================== BACKEND / STATE =====================
@@ -131,10 +134,27 @@ flowchart TD
 > VPC2 now has its own private route table, a NACL and a security group scoped
 > to it, and hosts `Server_2`. It has **no internet gateway** — the only way in
 > or out is the peering connection with VPC1, restricted to subnetB (Server_1).
+  ### VPC1 — `192.168.0.0/24`
 
-### VPC Peering (VPC1 ↔ VPC2)
+  | Resource | Name    | CIDR             | Type    | Instance |
+  |----------|---------|------------------|---------|----------|
+  | Subnet A | subnetA | 192.168.0.0/26   | Public  | Bastion  |
+  | Subnet B | subnetB | 192.168.0.64/26  | Private | Server_1 |
+  | Subnet C | subnetC | 192.168.0.128/26 | Public  | Invasor  |
 
-An `aws_vpc_peering_connection` links the two VPCs (`auto_accept = true`, both
+  ### VPC2 — `172.18.0.0/24`
+
+  | Resource | Name         | CIDR           | Type    | Instance |
+  |----------|--------------|----------------|---------|----------|
+  | Subnet A | subnetA_VPC2 | 172.18.0.0/26  | Private | Server_2 |
+
+  > VPC2 now has its own private route table, a NACL and a security group scoped
+  > to it, and hosts `Server_2`. It has **no internet gateway** — the only way in
+  > or out is the peering connection with VPC1, restricted to subnetB (Server_1).
+
+  ### VPC Peering (VPC1 ↔ VPC2)
+
+  An `aws_vpc_peering_connection` links the two VPCs (`auto_accept = true`, both
 VPCs live in the same account/region). Two `aws_route` entries make the private
 subnets routable across it:
 
@@ -221,6 +241,7 @@ create duplicate infrastructure. With shared state:
 
 State locking is **enabled** via S3 native locking (`use_lockfile = true` in
 `terraform.tf`). This feature requires Terraform >= 1.10; the pipeline pins 1.12, so
+`terraform.tf`). This feature requires Terraform >= 1.10; the pipeline pins 1.12, so
 both CI and a compatible local Terraform acquire a lock (a `.tflock` object in the
 bucket) for the duration of a `plan`/`apply`. There is **no DynamoDB lock table** —
 locking is handled entirely by S3.
@@ -234,7 +255,9 @@ check the Actions tab — a pipeline run is probably holding it.
 
 ## Prerequisites
 
-- [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.2
+- [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.2 — note
+  the S3 native state locking (`use_lockfile`) requires **>= 1.10**; the pipeline
+  pins **1.12**, so use a compatible local version to share the lock
 - **AWS credentials** — for local use, your AWS session must have access to the S3 state bucket (`aws-panella-bucket2`) and the target account; for CI, the workflow uses OIDC role assumption via `secrets.ARN`
 - An SSH key pair at `.ssh/terraform-key` (private) and `.ssh/terraform-key.pub` (public)
 
@@ -262,11 +285,12 @@ OIDC role assumption (`secrets.ARN`) — no static keys are stored.
 |-------------------|------------------------|---------------------------------------------------------|----------|
 | `pr_main.yaml`    | Pull request → `main`  | **Trivy** scan → `init` → `fmt -check` → `validate` → `plan`         | No — gate + review |
 | `deploy_dev.yaml` | Push to `dev`          | `init` → `fmt -check` → `plan`                                       | No — plan only |
-| `deploy_main.yaml`| Push to `main`         | `init` → `fmt -check` → `validate` → `plan` → **`apply`**            | Yes |
+| `deploy_main.yaml`| Push to `main`         | **Trivy** scan → `init` → `fmt -check` → `validate` → `plan` → **`apply`** | Yes |
 
-The PR pipeline runs in two dependent jobs: the `Configuration` job (`terraform
-plan`) has `needs: Trivy`, so **the plan only runs if the security scan passes**.
-Merging to `main` then triggers `deploy_main.yaml`, which applies automatically.
+Both the PR and the `main` deploy pipelines run in two dependent jobs: the
+`Configuration` job has `needs: Trivy`, so **`plan`/`apply` only run if the
+security scan passes**. Merging to `main` then triggers `deploy_main.yaml`, which
+re-runs the Trivy gate and applies automatically.
 
 ---
 
@@ -385,6 +409,11 @@ IP and accepts traffic **only** from subnetB, so this jump path
 # Roadmap
 
 ## 🚧 In progress
+
+  - [ ] **AWS Network Firewall policy ⚠️Need to do it out of free plan⚠️**
+  - [ ] **SSM Session Manager** instead of SSH connection
+
+### ✅ Done
   - [X] Route tables + associations for VPC2 subnets
   - [X] NACLs / security groups scoped to VPC2
   - [X] A second Server instance (`Server_2`) in VPC2
@@ -392,14 +421,16 @@ IP and accepts traffic **only** from subnetB, so this jump path
     public IPs and Server_1 private IP instead of reading them from the console
   - [X] **VPC peering** between VPC1 and VPC2 (with routes so Server_1 ↔ Server_2 works)
   - [X] **State locking** — enable `use_lockfile` on the S3 backend
-  - [ ] **AWS Network Firewall policy ⚠️Need to do it out of free plan⚠️**
-  - [ ] **SSM Session Manager** instead of SSH connection
 
 ---
 
 ## ⏳ Planned
 
 ### Security hardening (from Trivy findings)
+> These findings are currently suppressed in `.trivyignore` (so the gate stays
+> meaningful for *unexpected* issues) and are tracked here to be **fixed** later —
+> removing each AVD from `.trivyignore` once the corresponding hardening lands.
+
 - [ ] **IMDSv2** — enforce `metadata_options { http_tokens = "required" }` on
   `aws_instance` (Trivy AVD-AWS-0028)
 - [ ] **EBS encryption** — `root_block_device { encrypted = true }`
