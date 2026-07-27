@@ -24,25 +24,29 @@ locals {
       subnet_name = "subnetA"
       egress = [
         # ============= Rule for Public connection =============
-        { rule_no = 1, protocol = -1, action = "allow", cidr_block = "0.0.0.0/0", from_port = 0, to_port = 0 }
+        { rule_no = 1, protocol = "tcp", action = "allow", cidr_block = file("public_ip"), from_port = 1024, to_port = 65535 },
+        { rule_no = 2, protocol = "tcp", action = "allow", cidr_block = var.subnets["subnetB"].cidr_block, from_port = 22, to_port = 22 },
+        { rule_no = 3, protocol = -1, action = "deny", cidr_block = var.subnets["subnetC"].cidr_block, from_port = 0, to_port = 0 }
       ],
       ingress = [
         # ============= Rule for Public connection =============
-        { rule_no = 1, protocol = -1, action = "allow", cidr_block = "0.0.0.0/0", from_port = 0, to_port = 0 }
+        { rule_no = 1, protocol = "tcp", action = "allow", cidr_block = file("public_ip"), from_port = 22, to_port = 22 },
+        { rule_no = 2, protocol = "tcp", action = "allow", cidr_block = var.subnets["subnetB"].cidr_block, from_port = 1024, to_port = 65535 },
+        { rule_no = 3, protocol = -1, action = "deny", cidr_block = var.subnets["subnetC"].cidr_block, from_port = 0, to_port = 0 }
       ],
     }
     "ACL_subnetB" = {
       subnet_name = "subnetB"
       egress = [
         # ============= Rule for Subnet A connection =============
-        { rule_no = 1, protocol = -1, action = "allow", cidr_block = var.subnets["subnetA"].cidr_block, from_port = 0, to_port = 0 },
-        { rule_no = 2, protocol = -1, action = "allow", cidr_block = var.subnets["subnetA_VPC2"].cidr_block, from_port = 0, to_port = 0 },
+        { rule_no = 1, protocol = "tcp", action = "allow", cidr_block = var.subnets["subnetA"].cidr_block, from_port = 1024, to_port = 65535 },
+        { rule_no = 2, protocol = "tcp", action = "allow", cidr_block = var.subnets["subnetA_VPC2"].cidr_block, from_port = 22, to_port = 22 },
         { rule_no = 3, protocol = -1, action = "deny", cidr_block = var.subnets["subnetC"].cidr_block, from_port = 0, to_port = 0 }
       ],
       ingress = [
         # ============= Rule for Subnet A connection =============
-        { rule_no = 1, protocol = -1, action = "allow", cidr_block = var.subnets["subnetA"].cidr_block, from_port = 0, to_port = 0 },
-        { rule_no = 2, protocol = -1, action = "allow", cidr_block = var.subnets["subnetA_VPC2"].cidr_block, from_port = 0, to_port = 0 },
+        { rule_no = 1, protocol = "tcp", action = "allow", cidr_block = var.subnets["subnetA"].cidr_block, from_port = 22, to_port = 22 },
+        { rule_no = 2, protocol = "tcp", action = "allow", cidr_block = var.subnets["subnetA_VPC2"].cidr_block, from_port = 1024, to_port = 65535 },
         { rule_no = 3, protocol = -1, action = "deny", cidr_block = var.subnets["subnetC"].cidr_block, from_port = 0, to_port = 0 }
       ],
     }
@@ -61,11 +65,11 @@ locals {
       subnet_name = "subnetA_VPC2"
       egress = [
         # ============= Rule for Public connection =============
-        { rule_no = 1, protocol = -1, action = "allow", cidr_block = var.subnets["subnetB"].cidr_block, from_port = 0, to_port = 0 }
+        { rule_no = 1, protocol = "tcp", action = "allow", cidr_block = var.subnets["subnetB"].cidr_block, from_port = 1024, to_port = 65535 }
       ],
       ingress = [
         # ============= Rule for Public connection =============
-        { rule_no = 1, protocol = -1, action = "allow", cidr_block = var.subnets["subnetB"].cidr_block, from_port = 0, to_port = 0 }
+        { rule_no = 1, protocol = "tcp", action = "allow", cidr_block = var.subnets["subnetB"].cidr_block, from_port = 22, to_port = 22 }
       ],
     }
   }

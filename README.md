@@ -117,45 +117,17 @@ flowchart TD
   reachable from VPC1 through a **VPC peering connection** (see
   [VPC Peering](#vpc-peering-vpc1--vpc2) below).
 
-  ### VPC1 — `192.168.0.0/24`
-
-  | Resource | Name    | CIDR             | Type    | Instance |
-  |----------|---------|------------------|---------|----------|
-  | Subnet A | subnetA | 192.168.0.0/26   | Public  | Bastion  |
-  | Subnet B | subnetB | 192.168.0.64/26  | Private | Server_1 |
-  | Subnet C | subnetC | 192.168.0.128/26 | Public  | Invasor  |
-
-  ### VPC2 — `172.18.0.0/24`
-
-  | Resource | Name         | CIDR           | Type    | Instance |
-  |----------|--------------|----------------|---------|----------|
-  | Subnet A | subnetA_VPC2 | 172.18.0.0/26  | Private | Server_2 |
-
-  > VPC2 now has its own private route table, a NACL and a security group scoped
-  > to it, and hosts `Server_2`. It has **no internet gateway** — the only way in
-  > or out is the peering connection with VPC1, restricted to subnetB (Server_1).
-
-  ### VPC Peering (VPC1 ↔ VPC2)
-
-  An `aws_vpc_peering_connection` links the two VPCs (`auto_accept = true`, both
-VPCs live in the same account/region). Two `aws_route` entries make the private
-subnets routable across it:
-
-| Route          | Route table              | Destination                | Target  |
-|----------------|--------------------------|----------------------------|---------|
-| `vpc1_to_vpc2` | private_route_table VPC1 | 172.18.0.0/24 (VPC2 CIDR)  | peering |
-| `vpc2_to_vpc1` | private_route_table VPC2 | 192.168.0.0/24 (VPC1 CIDR) | peering |
-
-Routing alone doesn't open traffic: the NACLs and security groups below only
-allow **subnetB ↔ subnetA_VPC2**, so the peering effectively connects
-`Server_1` and `Server_2` and nothing else.
+### VPC1 — `192.168.0.0/24`
+| Resource | Name    | CIDR             | Type    | Instance |
+|----------|---------|------------------|---------|----------|
+| Subnet A | subnetA | 192.168.0.0/26   | Public  | Bastion  |
+| Subnet B | subnetB | 192.168.0.64/26  | Private | Server_1 |
+| Subnet C | subnetC | 192.168.0.128/26 | Public  | Invasor  |
 
 ### VPC2 — `172.18.0.0/24`
-
 | Resource | Name         | CIDR           | Type    | Instance |
 |----------|--------------|----------------|---------|----------|
 | Subnet A | subnetA_VPC2 | 172.18.0.0/26  | Private | Server_2 |
-
 > VPC2 now has its own private route table, a NACL and a security group scoped
 > to it, and hosts `Server_2`. It has **no internet gateway** — the only way in
 > or out is the peering connection with VPC1, restricted to subnetB (Server_1).
@@ -248,7 +220,7 @@ create duplicate infrastructure. With shared state:
 ### State locking (S3 native)
 
 State locking is **enabled** via S3 native locking (`use_lockfile = true` in
-`terraform.tf`). This feature requires Terraform >= 1.10; the pipeline pins 1.11, so
+`terraform.tf`). This feature requires Terraform >= 1.10; the pipeline pins 1.12, so
 both CI and a compatible local Terraform acquire a lock (a `.tflock` object in the
 bucket) for the duration of a `plan`/`apply`. There is **no DynamoDB lock table** —
 locking is handled entirely by S3.
@@ -413,10 +385,6 @@ IP and accepts traffic **only** from subnetB, so this jump path
 # Roadmap
 
 ## 🚧 In progress
-
-- **VPC2 build-out** — the VPC and `subnetA_VPC2` exist, but there is no internet
-  gateway, route table, NACL or security group scoped to VPC2 yet, so it has no
-  instances or connectivity. Next steps:
   - [X] Route tables + associations for VPC2 subnets
   - [X] NACLs / security groups scoped to VPC2
   - [X] A second Server instance (`Server_2`) in VPC2
