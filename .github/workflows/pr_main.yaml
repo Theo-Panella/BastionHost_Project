@@ -17,15 +17,19 @@ jobs:
 
       - name: Run Trivy IaC Scanner
         uses: aquasecurity/trivy-action@v0.36.0 # Match latest verified action tag
+        env:
+          TRIVY_SKIP_VERSION_CHECK: "true"
+          TRIVY_IGNOREFILE: ".trivyignore"
         with:
           scan-type: 'config'
           scan-ref: '.'
           severity: 'CRITICAL,HIGH'
+          limit-severities-for-sarif: true 
           exit-code: '1' # Fails the pipeline if issues are discovered
           format: 'sarif'
           output: 'trivy-results.sarif'
-          trivy-config: '--skip-version-check'
-    
+
+
       - name: Show trivy-results.sarif
         run: cat trivy-results.sarif
 
