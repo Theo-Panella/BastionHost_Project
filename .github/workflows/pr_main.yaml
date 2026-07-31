@@ -24,6 +24,7 @@ jobs:
           scan-type: 'config'
           scan-ref: '.'
           severity: 'CRITICAL,HIGH'
+          limit-severities-for-sarif: true 
           exit-code: '1' # Fails the pipeline if issues are discovered
           format: 'sarif'
           output: 'trivy-results.sarif'
