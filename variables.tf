@@ -18,6 +18,11 @@ variable "admin_cidr" {
   type = string
 }
 
+variable "ssh_key" {
+  type      = string
+  sensitive = true
+}
+
 # =============  NACLs  =============
 locals {
   ACLs = {
