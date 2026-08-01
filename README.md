@@ -363,8 +363,10 @@ re-runs the Trivy gate and applies automatically.
 
 ### Supplying the SSH key in CI
 
-`deploy_dev.yaml` passes the public key straight to Terraform as an environment
-variable on the `plan` step
+No workflow writes a key file to the runner anymore — the public key reaches
+Terraform as an environment variable, which it picks up as `var.ssh_key`.
+
+`deploy_dev.yaml` sets it on the `plan` step:
 
 ```yaml
 - name: "terraform plan"
@@ -372,6 +374,17 @@ variable on the `plan` step
   env:
     TF_VAR_ssh_key: ${{ secrets.SSH_KEY_EC2_AWS }}
 ```
+
+`pr_main.yaml` and `deploy_main.yaml` declare it once at workflow level, so both
+`plan` and `apply` inherit it:
+
+```yaml
+env:
+  TF_VAR_ssh_key: ${{ secrets.SSH_KEY_EC2_AWS }}
+```
+
+> Only the **public** key is needed — `aws_key_pair` registers it and the private
+> half never touches the runner.
 
 ---
 
@@ -552,11 +565,10 @@ IP and accepts traffic **only** from subnetB, so this jump path
   (public subnets, etc.) so the gate stays meaningful
 
 ### CI/CD
-- [ ] **Migrate `pr_main.yaml` and `deploy_main.yaml` to `TF_VAR_ssh_key`** — both
-  still write the key to `.ssh/` and will fail at `plan` now that `aws_key_pair`
-  reads `var.ssh_key`
-- [X] Pass the SSH public key to `deploy_dev.yaml` via `TF_VAR_ssh_key` instead of
-  writing key files on the runner
+- [X] **Pass the SSH public key via `TF_VAR_ssh_key` in all three workflows** —
+  no runner writes `.ssh/terraform-key{,.pub}` from secrets anymore
+- [ ] Drop the now-unused `SSH_KEY_EC2_AWS_PRIVATE` repository secret, and scope
+  `TF_VAR_ssh_key` to the `Configuration` job so the `Trivy` job stops inheriting it
 - [X] Add `terraform fmt -check` to the PR pipeline
 - [X] Also run the Trivy scan on `push` to `main` so alerts populate the default
   branch view in the Security tab
