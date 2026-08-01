@@ -4,6 +4,9 @@ on:
     branches:
       - dev
 
+env:
+  TF_VAR_ssh_key: ${{ secrets.SSH_KEY_EC2_AWS }}
+
 jobs:
   Configuration:
     runs-on: ubuntu-latest
@@ -34,5 +37,3 @@ jobs:
 
       - name: "terraform plan"
         run: terraform plan
-        env:
-          TF_VAR_ssh_key: ${{ secrets.SSH_KEY_EC2_AWS }}
