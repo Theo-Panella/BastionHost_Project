@@ -14,6 +14,10 @@ variable "subnets" {
   }))
 }
 
+variable "admin_cidr" {
+  type = string
+}
+
 # =============  NACLs  =============
 locals {
   ACLs = {
@@ -21,13 +25,13 @@ locals {
       subnet_name = "subnetA"
       egress = [
         # ============= Rule for Public connection =============
-        { rule_no = 1, protocol = "tcp", action = "allow", cidr_block = "0.0.0.0/0", from_port = 1024, to_port = 65535 },
+        { rule_no = 1, protocol = "tcp", action = "allow", cidr_block = var.admin_cidr, from_port = 1024, to_port = 65535 },
         { rule_no = 2, protocol = "tcp", action = "allow", cidr_block = var.subnets["subnetB"].cidr_block, from_port = 22, to_port = 22 },
         { rule_no = 3, protocol = -1, action = "deny", cidr_block = var.subnets["subnetC"].cidr_block, from_port = 0, to_port = 0 }
       ],
       ingress = [
         # ============= Rule for Public connection =============
-        { rule_no = 1, protocol = "tcp", action = "allow", cidr_block = "0.0.0.0/0", from_port = 22, to_port = 22 },
+        { rule_no = 1, protocol = "tcp", action = "allow", cidr_block = var.admin_cidr, from_port = 22, to_port = 22 },
         { rule_no = 2, protocol = "tcp", action = "allow", cidr_block = var.subnets["subnetB"].cidr_block, from_port = 1024, to_port = 65535 },
         { rule_no = 3, protocol = -1, action = "deny", cidr_block = var.subnets["subnetC"].cidr_block, from_port = 0, to_port = 0 }
       ],
@@ -51,11 +55,11 @@ locals {
       subnet_name = "subnetC"
       egress = [
         # ============= Rule for Public connection =============
-        { rule_no = 1, protocol = -1, action = "allow", cidr_block = "0.0.0.0/0", from_port = 0, to_port = 0 }
+        { rule_no = 1, protocol = -1, action = "allow", cidr_block = var.admin_cidr, from_port = 0, to_port = 0 }
       ],
       ingress = [
         # ============= Rule for Public connection =============
-        { rule_no = 1, protocol = -1, action = "allow", cidr_block = "0.0.0.0/0", from_port = 0, to_port = 0 }
+        { rule_no = 1, protocol = -1, action = "allow", cidr_block = var.admin_cidr, from_port = 0, to_port = 0 }
       ],
     }
     "subnetA_VPC2" = {
@@ -92,11 +96,11 @@ locals {
     "Bastion-Invasor" = {
       VPC = "VPC1"
       ingress = [
-        { from_port = 22, to_port = 22, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] },
+        { from_port = 22, to_port = 22, protocol = "tcp", cidr_blocks = [var.admin_cidr] },
         { from_port = 1024, to_port = 65535, protocol = "tcp", cidr_blocks = [var.subnets["subnetB"].cidr_block] }
       ],
       egress = [
-        { from_port = 1024, to_port = 65535, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] },
+        { from_port = 1024, to_port = 65535, protocol = "tcp", cidr_blocks = [var.admin_cidr] },
         { from_port = 22, to_port = 22, protocol = "tcp", cidr_blocks = [var.subnets["subnetB"].cidr_block] },
       ]
     },

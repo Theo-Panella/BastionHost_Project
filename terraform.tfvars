@@ -1,3 +1,5 @@
+admin_cidr = "0.0.0.0/0"
+
 vpc_configs = {
   "VPC1" = {
     cidr_block = "192.168.0.0/24"
