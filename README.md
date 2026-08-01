@@ -506,7 +506,6 @@ IP and accepts traffic **only** from subnetB, so this jump path
 
 ## 🚧 In progress
 
-  - [ ] **AWS Network Firewall policy ⚠️Need to do it out of free plan⚠️**
   - [ ] **SSM Session Manager** instead of SSH connection
 
 ### ✅ Done
@@ -535,8 +534,6 @@ IP and accepts traffic **only** from subnetB, so this jump path
 
 - [ ] **IMDSv2** — enforce `metadata_options { http_tokens = "required" }` on
   `aws_instance` (Trivy AVD-AWS-0028)
-- [ ] **EBS encryption** — `root_block_device { encrypted = true }`
-  (Trivy AVD-AWS-0131)
 - [ ] **VPC Flow Logs** (Trivy AVD-AWS-0178 — not suppressed)
 - [X] **Make the allowed SSH CIDR a variable** — `admin_cidr` drives the `ACLs` and
   `Security_groups` locals, so tightening the source address is a `terraform.tfvars`
@@ -552,8 +549,6 @@ IP and accepts traffic **only** from subnetB, so this jump path
 ### CI/CD
 - [X] **Pass the SSH public key via `TF_VAR_ssh_key` in all three workflows** —
   no runner writes `.ssh/terraform-key{,.pub}` from secrets anymore
-- [ ] Drop the now-unused `SSH_KEY_EC2_AWS_PRIVATE` repository secret, and scope
-  `TF_VAR_ssh_key` to the `Configuration` job so the `Trivy` job stops inheriting it
 - [X] Add `terraform fmt -check` to the PR pipeline
 - [X] Also run the Trivy scan on `push` to `main` so alerts populate the default
   branch view in the Security tab
