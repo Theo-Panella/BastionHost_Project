@@ -9,8 +9,8 @@ The goal is to demonstrate how to isolate a private instance so it can only be
 reached through a controlled entry point, using NACLs and Security Groups as
 layered network controls.
 
-> ⚠️ **Educational use only.** Some configurations (a single shared SSH key, SSH
-> allowed from `0.0.0.0/0`, no IMDSv2 / EBS encryption) are
+> ⚠️ **Educational use only.** Some configurations (a single shared SSH key,
+> `admin_cidr` defaulting to `0.0.0.0/0`, no IMDSv2 / EBS encryption) are
 > intentionally simplified and are **not recommended for production environments**.
 > A CI security scan (Trivy) runs on every pull request — see
 > [Security Scanning](#security-scanning-trivy) and the [ROADMAP](#roadmap).
@@ -164,10 +164,10 @@ the return traffic.
 
 | NACL         | VPC  | Direction | Rule | Action | Protocol / Ports    | Target                         |
 |--------------|------|-----------|------|--------|---------------------|--------------------------------|
-| ACL_subnetA  | VPC1 | ingress   | 1    | allow  | TCP 22              | 0.0.0.0/0                      |
+| ACL_subnetA  | VPC1 | ingress   | 1    | allow  | TCP 22              | `admin_cidr`                   |
 | ACL_subnetA  | VPC1 | ingress   | 2    | allow  | TCP 1024–65535      | 192.168.0.64/26 (subnetB)      |
 | ACL_subnetA  | VPC1 | ingress   | 3    | deny   | all                 | 192.168.0.128/26 (subnetC)     |
-| ACL_subnetA  | VPC1 | egress    | 1    | allow  | TCP 1024–65535      | 0.0.0.0/0                      |
+| ACL_subnetA  | VPC1 | egress    | 1    | allow  | TCP 1024–65535      | `admin_cidr`                   |
 | ACL_subnetA  | VPC1 | egress    | 2    | allow  | TCP 22              | 192.168.0.64/26 (subnetB)      |
 | ACL_subnetA  | VPC1 | egress    | 3    | deny   | all                 | 192.168.0.128/26 (subnetC)     |
 | ACL_subnetB  | VPC1 | ingress   | 1    | allow  | TCP 22              | 192.168.0.0/26 (subnetA)       |
@@ -176,19 +176,19 @@ the return traffic.
 | ACL_subnetB  | VPC1 | egress    | 1    | allow  | TCP 1024–65535      | 192.168.0.0/26 (subnetA)       |
 | ACL_subnetB  | VPC1 | egress    | 2    | allow  | TCP 22              | 172.18.0.0/26 (subnetA_VPC2)   |
 | ACL_subnetB  | VPC1 | egress    | 3    | deny   | all                 | 192.168.0.128/26 (subnetC)     |
-| ACL_subnetC  | VPC1 | in/out    | 1    | allow  | all                 | 0.0.0.0/0                      |
+| ACL_subnetC  | VPC1 | in/out    | 1    | allow  | all                 | `admin_cidr`                   |
 | subnetA_VPC2 | VPC2 | ingress   | 1    | allow  | TCP 22              | 192.168.0.64/26 (subnetB)      |
 | subnetA_VPC2 | VPC2 | egress    | 1    | allow  | TCP 1024–65535      | 192.168.0.64/26 (subnetB)      |
 
-> The `0.0.0.0/0` entries are the CIDR allowed to SSH into the public subnet.
-> They are declared in the `ACLs` local in `variables.tf` — narrow them to your
-> own address for a tighter setup, see [Prerequisites](#prerequisites).
+> `admin_cidr` is the CIDR allowed to SSH into the public subnet, set in
+> `terraform.tfvars` (`0.0.0.0/0` by default) — narrow it to your own address for
+> a tighter setup, see [Prerequisites](#prerequisites).
 
 ### Security Groups
 
 | Group           | VPC  | Instances        | Ingress                                                        | Egress                                                          |
 |-----------------|------|------------------|----------------------------------------------------------------|-----------------------------------------------------------------|
-| Bastion-Invasor | VPC1 | Bastion, Invasor | TCP 22 from 0.0.0.0/0 · TCP 1024–65535 from subnetB             | TCP 1024–65535 to 0.0.0.0/0 · TCP 22 to subnetB                 |
+| Bastion-Invasor | VPC1 | Bastion, Invasor | TCP 22 from `admin_cidr` · TCP 1024–65535 from subnetB          | TCP 1024–65535 to `admin_cidr` · TCP 22 to subnetB               |
 | Server_1        | VPC1 | Server_1         | TCP 22 from subnetA · TCP 1024–65535 from subnetA_VPC2          | TCP 1024–65535 to subnetA · TCP 22 to subnetA_VPC2              |
 | Server_2        | VPC2 | Server_2         | TCP 22 from subnetB                                            | TCP 1024–65535 to subnetB                                       |
 
@@ -211,14 +211,31 @@ variable default:
 | `Network.tf`       | VPCs, subnets, internet gateway, NACLs, route tables + associations, VPC peering and its routes |
 | `Computer.tf`      | AWS provider, AMI data source, security groups, EC2 instances, SSH key pair                    |
 | `variables.tf`     | Variable **declarations** (typed, no defaults) + the `ACLs` and `Security_groups` locals       |
-| `terraform.tfvars` | Variable **values** — VPC CIDRs, subnets, instance type and the EC2 → subnet/SG mapping        |
+| `terraform.tfvars` | Variable **values** — `admin_cidr`, VPC CIDRs, subnets, instance type and the EC2 → subnet/SG mapping |
 | `terraform.tf`     | Required providers/version and the S3 backend                                                  |
 | `outputs.tf`       | Public and private IP maps of every instance                                                   |
 
 Because the variables are typed and have no defaults, `terraform.tfvars` is
 committed and required — Terraform loads it automatically on `plan`/`apply`,
 both locally and in CI. The NACL and security-group rules stay in
-`variables.tf` as `locals` since they reference other subnets' CIDRs.
+`variables.tf` as `locals` since they reference `var.admin_cidr` and other
+subnets' CIDRs.
+
+One variable is deliberately **not** in `terraform.tfvars`: `ssh_key` is marked
+`sensitive` and holds the **public** key material used by `aws_key_pair`, so it
+is supplied at run time instead of being committed — see
+[Prerequisites](#prerequisites).
+
+### Input Variables
+
+| Variable                  | Type                | Source             | Description                                                        |
+|---------------------------|---------------------|--------------------|--------------------------------------------------------------------|
+| `admin_cidr`              | `string`            | `terraform.tfvars` | CIDR allowed to SSH into the public subnet — drives `ACL_subnetA`, `ACL_subnetC` and the `Bastion-Invasor` SG |
+| `ssh_key`                 | `string` (sensitive)| runtime / CI secret| Public key material for `aws_key_pair` — never committed            |
+| `vpc_configs`             | `map(object)`       | `terraform.tfvars` | VPC name → CIDR block                                               |
+| `subnets`                 | `map(object)`       | `terraform.tfvars` | Subnet name → CIDR, AZ, `ip_publico`, parent VPC                    |
+| `instance_configurations` | `object`            | `terraform.tfvars` | AMI `most_recent` flag and `instance_type` (both optional)          |
+| `EC2_instances`           | `map(object)`       | `terraform.tfvars` | Instance name → subnet and security group                           |
 
 ---
 
@@ -286,25 +303,37 @@ check the Actions tab — a pipeline run is probably holding it.
   the S3 native state locking (`use_lockfile`) requires **>= 1.10**; the pipeline
   pins **1.12**, so use a compatible local version to share the lock
 - **AWS credentials** — for local use, your AWS session must have access to the S3 state bucket (`aws-panella-bucket2`) and the target account; for CI, the workflow uses OIDC role assumption via `secrets.ARN`
-- An SSH key pair at `.ssh/terraform-key` (private) and `.ssh/terraform-key.pub` (public)
+- An SSH key pair — the private half stays on your machine, the **public** half is
+  passed to Terraform through the `ssh_key` variable
 
 Generate the SSH key if you don't have one:
 ```bash
 ssh-keygen -t rsa -b 4096 -f .ssh/terraform-key -N ""
 ```
 
-**Allowed SSH source:** both `ACL_subnetA` and the `Bastion-Invasor` security group
-allow SSH from `0.0.0.0/0`, hardcoded in the `ACLs` and `Security_groups` locals in
-`variables.tf`, so the lab works out of the box. For a tighter setup, replace those
-`0.0.0.0/0` entries with your own address:
+**`ssh_key` variable:** `aws_key_pair` reads `var.ssh_key`, which is declared `sensitive` and has no default, so it
+must be supplied on every run.
+
 ```bash
-curl -s https://checkip.amazonaws.com   # → use "<your-ip>/32" in variables.tf
+# environment variable (same mechanism the pipeline uses)
+export TF_VAR_ssh_key="$(cat .ssh/terraform-key.pub)"
+terraform plan
 ```
 
-**Variable values:** `terraform.tfvars` is committed and holds the VPC CIDRs, subnets,
-instance type and the EC2 → subnet/SG mapping. The variables in `variables.tf` have no
-defaults, so this file (or an equivalent `-var-file`) is required — see
-[Repository Layout](#repository-layout).
+In CI the value comes from the `SSH_KEY_EC2_AWS` secret, exported as
+`TF_VAR_ssh_key` — see [CI/CD Pipelines](#cicd-pipelines).
+
+**Allowed SSH source:** both `ACL_subnetA` and the `Bastion-Invasor` security group
+allow SSH from `var.admin_cidr`, set to `0.0.0.0/0` in `terraform.tfvars` so the lab
+works out of the box. For a tighter setup, point it at your own address:
+```bash
+curl -s https://checkip.amazonaws.com   # → admin_cidr = "<your-ip>/32"
+```
+
+**Variable values:** `terraform.tfvars` is committed and holds `admin_cidr`, the VPC
+CIDRs, subnets, instance type and the EC2 → subnet/SG mapping. The variables in
+`variables.tf` have no defaults, so this file (or an equivalent `-var-file`) is
+required — see [Repository Layout](#repository-layout).
 
 **Local credentials:** set up with `aws configure` or `aws sso login`. The S3 backend
 is in `us-east-1`; credentials need access to both that region (for state) and `us-west-2`
@@ -331,6 +360,18 @@ Both the PR and the `main` deploy pipelines run in two dependent jobs: the
 `Configuration` job has `needs: Trivy`, so **`plan`/`apply` only run if the
 security scan passes**. Merging to `main` then triggers `deploy_main.yaml`, which
 re-runs the Trivy gate and applies automatically.
+
+### Supplying the SSH key in CI
+
+`deploy_dev.yaml` passes the public key straight to Terraform as an environment
+variable on the `plan` step
+
+```yaml
+- name: "terraform plan"
+  run: terraform plan
+  env:
+    TF_VAR_ssh_key: ${{ secrets.SSH_KEY_EC2_AWS }}
+```
 
 ---
 
@@ -372,10 +413,14 @@ See [CI/CD Pipelines](#cicd-pipelines) above for the full matrix.
 ### Local
 
 ```bash
+export TF_VAR_ssh_key="$(cat .ssh/terraform-key.pub)"
 terraform init
 terraform plan
 terraform apply
 ```
+
+`TF_VAR_ssh_key` is required — see [Prerequisites](#prerequisites) for the
+alternatives (`-var` flag or a `secret.auto.tfvars` file).
 
 ### Teardown
 
@@ -383,6 +428,7 @@ There is no destroy job in the pipeline — teardown is **local only**, and work
 pipeline-created infrastructure thanks to the shared backend:
 
 ```bash
+export TF_VAR_ssh_key="$(cat .ssh/terraform-key.pub)"
 terraform destroy
 ```
 
@@ -494,9 +540,11 @@ IP and accepts traffic **only** from subnetB, so this jump path
 - [ ] **EBS encryption** — `root_block_device { encrypted = true }`
   (Trivy AVD-AWS-0131)
 - [ ] **VPC Flow Logs** (Trivy AVD-AWS-0178 — not suppressed)
-- [ ] **Make the allowed SSH CIDR a variable** — move the `0.0.0.0/0` entries out of
-  the `ACLs` / `Security_groups` locals into `terraform.tfvars`, so tightening the
-  source address doesn't mean editing `variables.tf`
+- [X] **Make the allowed SSH CIDR a variable** — `admin_cidr` drives the `ACLs` and
+  `Security_groups` locals, so tightening the source address is a `terraform.tfvars`
+  edit (Trivy AVD-AWS-0107 stays suppressed while it defaults to `0.0.0.0/0`)
+- [X] **Keep the SSH public key out of the repo** — `aws_key_pair` reads the
+  `sensitive` `ssh_key` variable instead of `file(".ssh/terraform-key.pub")`
 - [X] **Narrow the Bastion security group** — ingress restricted to TCP/22 instead of
   all traffic (Trivy AVD-AWS-0107 — still suppressed while the source CIDR is
   `0.0.0.0/0`)
@@ -504,6 +552,11 @@ IP and accepts traffic **only** from subnetB, so this jump path
   (public subnets, etc.) so the gate stays meaningful
 
 ### CI/CD
+- [ ] **Migrate `pr_main.yaml` and `deploy_main.yaml` to `TF_VAR_ssh_key`** — both
+  still write the key to `.ssh/` and will fail at `plan` now that `aws_key_pair`
+  reads `var.ssh_key`
+- [X] Pass the SSH public key to `deploy_dev.yaml` via `TF_VAR_ssh_key` instead of
+  writing key files on the runner
 - [X] Add `terraform fmt -check` to the PR pipeline
 - [X] Also run the Trivy scan on `push` to `main` so alerts populate the default
   branch view in the Security tab

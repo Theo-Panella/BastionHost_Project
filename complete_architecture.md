@@ -61,11 +61,11 @@ flowchart TD
             snB["subnetB · 192.168.0.64/26<br/>Private"]
             snC["subnetC · 192.168.0.128/26<br/>Public"]
 
-            aclA["NACL ACL_subnetA<br/>tcp/22 from 0.0.0.0/0<br/>allow B · deny C"]
+            aclA["NACL ACL_subnetA<br/>tcp/22 from admin_cidr<br/>allow B · deny C"]
             aclB["NACL ACL_subnetB<br/>tcp/22 from A · allow VPC2 · deny C"]
-            aclC["NACL ACL_subnetC<br/>allow 0.0.0.0/0"]
+            aclC["NACL ACL_subnetC<br/>allow admin_cidr"]
 
-            sgBI["SG Bastion-Invasor<br/>tcp/22 from 0.0.0.0/0<br/>+ ephemeral from subnetB"]
+            sgBI["SG Bastion-Invasor<br/>tcp/22 from admin_cidr<br/>+ ephemeral from subnetB"]
             sgS1["SG Server_1<br/>tcp/22 from subnetA<br/>+ ephemeral from subnetA_VPC2"]
 
             bastion["EC2 Bastion<br/>subnetA · public"]
@@ -83,7 +83,7 @@ flowchart TD
         end
 
         peering["🔗 VPC Peering Connection<br/>VPC1 ↔ VPC2 · auto_accept"]
-        keypair["aws_key_pair<br/>SSH Key (.pub)"]
+        keypair["aws_key_pair<br/>SSH Key ← var.ssh_key (sensitive)"]
     end
 
     %% ===================== OUTPUTS =====================
