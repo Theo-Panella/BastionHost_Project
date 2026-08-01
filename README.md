@@ -363,28 +363,13 @@ re-runs the Trivy gate and applies automatically.
 
 ### Supplying the SSH key in CI
 
-No workflow writes a key file to the runner anymore — the public key reaches
-Terraform as an environment variable, which it picks up as `var.ssh_key`.
-
-`deploy_dev.yaml` sets it on the `plan` step:
-
-```yaml
-- name: "terraform plan"
-  run: terraform plan
-  env:
-    TF_VAR_ssh_key: ${{ secrets.SSH_KEY_EC2_AWS }}
-```
-
-`pr_main.yaml` and `deploy_main.yaml` declare it once at workflow level, so both
-`plan` and `apply` inherit it:
+No workflow writes a key file to the runner. All three declare the **public** key
+once at workflow level, and Terraform picks it up as `var.ssh_key`:
 
 ```yaml
 env:
   TF_VAR_ssh_key: ${{ secrets.SSH_KEY_EC2_AWS }}
 ```
-
-> Only the **public** key is needed — `aws_key_pair` registers it and the private
-> half never touches the runner.
 
 ---
 
