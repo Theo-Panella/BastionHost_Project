@@ -9,8 +9,8 @@ The goal is to demonstrate how to isolate a private instance so it can only be
 reached through a controlled entry point, using NACLs and Security Groups as
 layered network controls.
 
-> ⚠️ **Educational use only.** Some configurations (a single shared SSH key, the
-> `public_ip` file defaulting to `0.0.0.0/0`, no IMDSv2 / EBS encryption) are
+> ⚠️ **Educational use only.** Some configurations (a single shared SSH key, SSH
+> allowed from `0.0.0.0/0`, no IMDSv2 / EBS encryption) are
 > intentionally simplified and are **not recommended for production environments**.
 > A CI security scan (Trivy) runs on every pull request — see
 > [Security Scanning](#security-scanning-trivy) and the [ROADMAP](#roadmap).
@@ -164,10 +164,10 @@ the return traffic.
 
 | NACL         | VPC  | Direction | Rule | Action | Protocol / Ports    | Target                         |
 |--------------|------|-----------|------|--------|---------------------|--------------------------------|
-| ACL_subnetA  | VPC1 | ingress   | 1    | allow  | TCP 22              | `public_ip` file               |
+| ACL_subnetA  | VPC1 | ingress   | 1    | allow  | TCP 22              | 0.0.0.0/0                      |
 | ACL_subnetA  | VPC1 | ingress   | 2    | allow  | TCP 1024–65535      | 192.168.0.64/26 (subnetB)      |
 | ACL_subnetA  | VPC1 | ingress   | 3    | deny   | all                 | 192.168.0.128/26 (subnetC)     |
-| ACL_subnetA  | VPC1 | egress    | 1    | allow  | TCP 1024–65535      | `public_ip` file               |
+| ACL_subnetA  | VPC1 | egress    | 1    | allow  | TCP 1024–65535      | 0.0.0.0/0                      |
 | ACL_subnetA  | VPC1 | egress    | 2    | allow  | TCP 22              | 192.168.0.64/26 (subnetB)      |
 | ACL_subnetA  | VPC1 | egress    | 3    | deny   | all                 | 192.168.0.128/26 (subnetC)     |
 | ACL_subnetB  | VPC1 | ingress   | 1    | allow  | TCP 22              | 192.168.0.0/26 (subnetA)       |
@@ -180,14 +180,15 @@ the return traffic.
 | subnetA_VPC2 | VPC2 | ingress   | 1    | allow  | TCP 22              | 192.168.0.64/26 (subnetB)      |
 | subnetA_VPC2 | VPC2 | egress    | 1    | allow  | TCP 1024–65535      | 192.168.0.64/26 (subnetB)      |
 
-> `public_ip` is a file at the repository root holding the CIDR allowed to SSH
-> into the public subnet — see [Prerequisites](#prerequisites).
+> The `0.0.0.0/0` entries are the CIDR allowed to SSH into the public subnet.
+> They are declared in the `ACLs` local in `variables.tf` — narrow them to your
+> own address for a tighter setup, see [Prerequisites](#prerequisites).
 
 ### Security Groups
 
 | Group           | VPC  | Instances        | Ingress                                                        | Egress                                                          |
 |-----------------|------|------------------|----------------------------------------------------------------|-----------------------------------------------------------------|
-| Bastion-Invasor | VPC1 | Bastion, Invasor | TCP 22 from `public_ip` · TCP 1024–65535 from subnetB           | TCP 1024–65535 to `public_ip` · TCP 22 to subnetB               |
+| Bastion-Invasor | VPC1 | Bastion, Invasor | TCP 22 from 0.0.0.0/0 · TCP 1024–65535 from subnetB             | TCP 1024–65535 to 0.0.0.0/0 · TCP 22 to subnetB                 |
 | Server_1        | VPC1 | Server_1         | TCP 22 from subnetA · TCP 1024–65535 from subnetA_VPC2          | TCP 1024–65535 to subnetA · TCP 22 to subnetA_VPC2              |
 | Server_2        | VPC2 | Server_2         | TCP 22 from subnetB                                            | TCP 1024–65535 to subnetB                                       |
 
@@ -196,6 +197,28 @@ the return traffic.
 > `ACL_subnetB` rule 3, which denies subnetC, this is what blocks the Invasor
 > from reaching Server_1. Server_2 in turn only talks to **subnetB** — it is
 > unreachable from the public subnets entirely.
+
+---
+
+## Repository Layout
+
+The configuration is split by responsibility instead of living in a single
+`main.tf`, and every value is declared in `terraform.tfvars` rather than as a
+variable default:
+
+| File               | Contents                                                                                     |
+|--------------------|----------------------------------------------------------------------------------------------|
+| `Network.tf`       | VPCs, subnets, internet gateway, NACLs, route tables + associations, VPC peering and its routes |
+| `Computer.tf`      | AWS provider, AMI data source, security groups, EC2 instances, SSH key pair                    |
+| `variables.tf`     | Variable **declarations** (typed, no defaults) + the `ACLs` and `Security_groups` locals       |
+| `terraform.tfvars` | Variable **values** — VPC CIDRs, subnets, instance type and the EC2 → subnet/SG mapping        |
+| `terraform.tf`     | Required providers/version and the S3 backend                                                  |
+| `outputs.tf`       | Public and private IP maps of every instance                                                   |
+
+Because the variables are typed and have no defaults, `terraform.tfvars` is
+committed and required — Terraform loads it automatically on `plan`/`apply`,
+both locally and in CI. The NACL and security-group rules stay in
+`variables.tf` as `locals` since they reference other subnets' CIDRs.
 
 ---
 
@@ -264,21 +287,24 @@ check the Actions tab — a pipeline run is probably holding it.
   pins **1.12**, so use a compatible local version to share the lock
 - **AWS credentials** — for local use, your AWS session must have access to the S3 state bucket (`aws-panella-bucket2`) and the target account; for CI, the workflow uses OIDC role assumption via `secrets.ARN`
 - An SSH key pair at `.ssh/terraform-key` (private) and `.ssh/terraform-key.pub` (public)
-- A `public_ip` file at the repository root with the CIDR allowed to SSH into the
-  public subnet (Bastion / Invasor)
 
 Generate the SSH key if you don't have one:
 ```bash
 ssh-keygen -t rsa -b 4096 -f .ssh/terraform-key -N ""
 ```
 
-**`public_ip` file:** both `ACL_subnetA` and the `Bastion-Invasor` security group read
-this file (`file("public_ip")`) to know which source CIDR may open SSH. It is committed
-with `0.0.0.0/0` so the lab works out of the box — replace it with your own address for
-a tighter setup:
+**Allowed SSH source:** both `ACL_subnetA` and the `Bastion-Invasor` security group
+allow SSH from `0.0.0.0/0`, hardcoded in the `ACLs` and `Security_groups` locals in
+`variables.tf`, so the lab works out of the box. For a tighter setup, replace those
+`0.0.0.0/0` entries with your own address:
 ```bash
-echo "$(curl -s https://checkip.amazonaws.com)/32" > public_ip
+curl -s https://checkip.amazonaws.com   # → use "<your-ip>/32" in variables.tf
 ```
+
+**Variable values:** `terraform.tfvars` is committed and holds the VPC CIDRs, subnets,
+instance type and the EC2 → subnet/SG mapping. The variables in `variables.tf` have no
+defaults, so this file (or an equivalent `-var-file`) is required — see
+[Repository Layout](#repository-layout).
 
 **Local credentials:** set up with `aws configure` or `aws sso login`. The S3 backend
 is in `us-east-1`; credentials need access to both that region (for state) and `us-west-2`
@@ -440,6 +466,10 @@ IP and accepts traffic **only** from subnetB, so this jump path
   - [ ] **SSM Session Manager** instead of SSH connection
 
 ### ✅ Done
+  - [X] **Split `main.tf`** into `Network.tf` (VPCs, subnets, NACLs, routing, peering)
+    and `Computer.tf` (provider, AMI, security groups, instances, key pair)
+  - [X] **Typed variables + `terraform.tfvars`** — variable declarations no longer carry
+    inline defaults; every value lives in `terraform.tfvars`
   - [X] Route tables + associations for VPC2 subnets
   - [X] NACLs / security groups scoped to VPC2
   - [X] A second Server instance (`Server_2`) in VPC2
@@ -464,9 +494,12 @@ IP and accepts traffic **only** from subnetB, so this jump path
 - [ ] **EBS encryption** — `root_block_device { encrypted = true }`
   (Trivy AVD-AWS-0131)
 - [ ] **VPC Flow Logs** (Trivy AVD-AWS-0178 — not suppressed)
-- [X] **Narrow the Bastion security group** — ingress restricted to TCP/22 from
-  the CIDR in the `public_ip` file instead of all traffic from `0.0.0.0/0`
-  (Trivy AVD-AWS-0107 — still suppressed while `public_ip` defaults to `0.0.0.0/0`)
+- [ ] **Make the allowed SSH CIDR a variable** — move the `0.0.0.0/0` entries out of
+  the `ACLs` / `Security_groups` locals into `terraform.tfvars`, so tightening the
+  source address doesn't mean editing `variables.tf`
+- [X] **Narrow the Bastion security group** — ingress restricted to TCP/22 instead of
+  all traffic (Trivy AVD-AWS-0107 — still suppressed while the source CIDR is
+  `0.0.0.0/0`)
 - [X] Add `.trivyignore` for the findings that are intentional in this lab
   (public subnets, etc.) so the gate stays meaningful
 

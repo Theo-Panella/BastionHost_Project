@@ -3,7 +3,7 @@ flowchart TD
     %% ===================== DESKTOP =====================
     subgraph DEV["💻 Developer Desktop"]
         direction TB
-        code["Edits Terraform files<br/>main.tf · variables.tf · terraform.tf · outputs.tf<br/>+ public_ip (allowed SSH CIDR)"]
+        code["Edits Terraform files<br/>Network.tf · Computer.tf · variables.tf<br/>terraform.tfvars · terraform.tf · outputs.tf"]
         commit["git commit"]
         push["git push origin main"]
         code --> commit --> push
@@ -61,11 +61,11 @@ flowchart TD
             snB["subnetB · 192.168.0.64/26<br/>Private"]
             snC["subnetC · 192.168.0.128/26<br/>Public"]
 
-            aclA["NACL ACL_subnetA<br/>tcp/22 from public_ip<br/>allow B · deny C"]
+            aclA["NACL ACL_subnetA<br/>tcp/22 from 0.0.0.0/0<br/>allow B · deny C"]
             aclB["NACL ACL_subnetB<br/>tcp/22 from A · allow VPC2 · deny C"]
             aclC["NACL ACL_subnetC<br/>allow 0.0.0.0/0"]
 
-            sgBI["SG Bastion-Invasor<br/>tcp/22 from public_ip<br/>+ ephemeral from subnetB"]
+            sgBI["SG Bastion-Invasor<br/>tcp/22 from 0.0.0.0/0<br/>+ ephemeral from subnetB"]
             sgS1["SG Server_1<br/>tcp/22 from subnetA<br/>+ ephemeral from subnetA_VPC2"]
 
             bastion["EC2 Bastion<br/>subnetA · public"]
