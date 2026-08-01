@@ -1,13 +1,18 @@
 # BastionHost Project
 
+<p align="center">
+  <img src="bastion.gif" alt="Bastion Host" width="300">
+</p>
+
 Terraform-based simulation of a Bastion Host (jump server) architecture on AWS.
 The goal is to demonstrate how to isolate a private instance so it can only be
 reached through a controlled entry point, using NACLs and Security Groups as
 layered network controls.
 
-> ⚠️ **Educational use only.** Some configurations (shared SSH key, broad SG rules)
-> are intentionally simplified and are **not recommended for production environments**.
-> A CI security scan (Trivy) flags these on every pull request — see
+> ⚠️ **Educational use only.** Some configurations (a single shared SSH key, the
+> `public_ip` file defaulting to `0.0.0.0/0`, no IMDSv2 / EBS encryption) are
+> intentionally simplified and are **not recommended for production environments**.
+> A CI security scan (Trivy) runs on every pull request — see
 > [Security Scanning](#security-scanning-trivy) and the [ROADMAP](#roadmap).
 
 ---
@@ -131,30 +136,14 @@ flowchart TD
 | Resource | Name         | CIDR           | Type    | Instance |
 |----------|--------------|----------------|---------|----------|
 | Subnet A | subnetA_VPC2 | 172.18.0.0/26  | Private | Server_2 |
+
 > VPC2 now has its own private route table, a NACL and a security group scoped
 > to it, and hosts `Server_2`. It has **no internet gateway** — the only way in
 > or out is the peering connection with VPC1, restricted to subnetB (Server_1).
-  ### VPC1 — `192.168.0.0/24`
 
-  | Resource | Name    | CIDR             | Type    | Instance |
-  |----------|---------|------------------|---------|----------|
-  | Subnet A | subnetA | 192.168.0.0/26   | Public  | Bastion  |
-  | Subnet B | subnetB | 192.168.0.64/26  | Private | Server_1 |
-  | Subnet C | subnetC | 192.168.0.128/26 | Public  | Invasor  |
+### VPC Peering (VPC1 ↔ VPC2)
 
-  ### VPC2 — `172.18.0.0/24`
-
-  | Resource | Name         | CIDR           | Type    | Instance |
-  |----------|--------------|----------------|---------|----------|
-  | Subnet A | subnetA_VPC2 | 172.18.0.0/26  | Private | Server_2 |
-
-  > VPC2 now has its own private route table, a NACL and a security group scoped
-  > to it, and hosts `Server_2`. It has **no internet gateway** — the only way in
-  > or out is the peering connection with VPC1, restricted to subnetB (Server_1).
-
-  ### VPC Peering (VPC1 ↔ VPC2)
-
-  An `aws_vpc_peering_connection` links the two VPCs (`auto_accept = true`, both
+An `aws_vpc_peering_connection` links the two VPCs (`auto_accept = true`, both
 VPCs live in the same account/region). Two `aws_route` entries make the private
 subnets routable across it:
 
@@ -169,28 +158,44 @@ allow **subnetB ↔ subnetA_VPC2**, so the peering effectively connects
 
 ### NACL Rules
 
-| NACL         | VPC  | Direction | Rule | Action | Target                          |
-|--------------|------|-----------|------|--------|---------------------------------|
-| ACL_subnetA  | VPC1 | in/out    | 1    | allow  | 0.0.0.0/0                       |
-| ACL_subnetB  | VPC1 | in/out    | 1    | allow  | 192.168.0.0/26 (subnetA)        |
-| ACL_subnetB  | VPC1 | in/out    | 2    | allow  | 172.18.0.0/26 (subnetA_VPC2)    |
-| ACL_subnetB  | VPC1 | in/out    | 3    | deny   | 192.168.0.128/26 (subnetC)      |
-| ACL_subnetC  | VPC1 | in/out    | 1    | allow  | 0.0.0.0/0                       |
-| subnetA_VPC2 | VPC2 | in/out    | 1    | allow  | 192.168.0.64/26 (subnetB)       |
+Rules are stateless, so each allowed flow is declared twice: SSH (TCP/22) in the
+direction the connection is opened, and the ephemeral range (TCP/1024–65535) for
+the return traffic.
+
+| NACL         | VPC  | Direction | Rule | Action | Protocol / Ports    | Target                         |
+|--------------|------|-----------|------|--------|---------------------|--------------------------------|
+| ACL_subnetA  | VPC1 | ingress   | 1    | allow  | TCP 22              | `public_ip` file               |
+| ACL_subnetA  | VPC1 | ingress   | 2    | allow  | TCP 1024–65535      | 192.168.0.64/26 (subnetB)      |
+| ACL_subnetA  | VPC1 | ingress   | 3    | deny   | all                 | 192.168.0.128/26 (subnetC)     |
+| ACL_subnetA  | VPC1 | egress    | 1    | allow  | TCP 1024–65535      | `public_ip` file               |
+| ACL_subnetA  | VPC1 | egress    | 2    | allow  | TCP 22              | 192.168.0.64/26 (subnetB)      |
+| ACL_subnetA  | VPC1 | egress    | 3    | deny   | all                 | 192.168.0.128/26 (subnetC)     |
+| ACL_subnetB  | VPC1 | ingress   | 1    | allow  | TCP 22              | 192.168.0.0/26 (subnetA)       |
+| ACL_subnetB  | VPC1 | ingress   | 2    | allow  | TCP 1024–65535      | 172.18.0.0/26 (subnetA_VPC2)   |
+| ACL_subnetB  | VPC1 | ingress   | 3    | deny   | all                 | 192.168.0.128/26 (subnetC)     |
+| ACL_subnetB  | VPC1 | egress    | 1    | allow  | TCP 1024–65535      | 192.168.0.0/26 (subnetA)       |
+| ACL_subnetB  | VPC1 | egress    | 2    | allow  | TCP 22              | 172.18.0.0/26 (subnetA_VPC2)   |
+| ACL_subnetB  | VPC1 | egress    | 3    | deny   | all                 | 192.168.0.128/26 (subnetC)     |
+| ACL_subnetC  | VPC1 | in/out    | 1    | allow  | all                 | 0.0.0.0/0                      |
+| subnetA_VPC2 | VPC2 | ingress   | 1    | allow  | TCP 22              | 192.168.0.64/26 (subnetB)      |
+| subnetA_VPC2 | VPC2 | egress    | 1    | allow  | TCP 1024–65535      | 192.168.0.64/26 (subnetB)      |
+
+> `public_ip` is a file at the repository root holding the CIDR allowed to SSH
+> into the public subnet — see [Prerequisites](#prerequisites).
 
 ### Security Groups
 
-| Group           | VPC  | Instances        | Ingress / Egress                                        |
-|-----------------|------|------------------|---------------------------------------------------------|
-| Bastion-Invasor | VPC1 | Bastion, Invasor | All traffic (0.0.0.0/0)                                 |
-| Server_1        | VPC1 | Server_1         | subnetA (`192.168.0.0/26`) + subnetA_VPC2 (`172.18.0.0/26`) |
-| Server_2        | VPC2 | Server_2         | subnetB only (`192.168.0.64/26`)                        |
+| Group           | VPC  | Instances        | Ingress                                                        | Egress                                                          |
+|-----------------|------|------------------|----------------------------------------------------------------|-----------------------------------------------------------------|
+| Bastion-Invasor | VPC1 | Bastion, Invasor | TCP 22 from `public_ip` · TCP 1024–65535 from subnetB           | TCP 1024–65535 to `public_ip` · TCP 22 to subnetB               |
+| Server_1        | VPC1 | Server_1         | TCP 22 from subnetA · TCP 1024–65535 from subnetA_VPC2          | TCP 1024–65535 to subnetA · TCP 22 to subnetA_VPC2              |
+| Server_2        | VPC2 | Server_2         | TCP 22 from subnetB                                            | TCP 1024–65535 to subnetB                                       |
 
-> Server_1 only accepts traffic from **subnetA** (the Bastion subnet) and
-> **subnetA_VPC2** (Server_2, over the peering). Combined with `ACL_subnetB`
-> rule 3, which denies subnetC, this is what blocks the Invasor from reaching
-> Server_1. Server_2 in turn only talks to **subnetB** — it is unreachable from
-> the public subnets entirely.
+> Server_1 only accepts SSH from **subnetA** (the Bastion subnet) and return
+> traffic from **subnetA_VPC2** (Server_2, over the peering). Combined with
+> `ACL_subnetB` rule 3, which denies subnetC, this is what blocks the Invasor
+> from reaching Server_1. Server_2 in turn only talks to **subnetB** — it is
+> unreachable from the public subnets entirely.
 
 ---
 
@@ -241,7 +246,6 @@ create duplicate infrastructure. With shared state:
 
 State locking is **enabled** via S3 native locking (`use_lockfile = true` in
 `terraform.tf`). This feature requires Terraform >= 1.10; the pipeline pins 1.12, so
-`terraform.tf`). This feature requires Terraform >= 1.10; the pipeline pins 1.12, so
 both CI and a compatible local Terraform acquire a lock (a `.tflock` object in the
 bucket) for the duration of a `plan`/`apply`. There is **no DynamoDB lock table** —
 locking is handled entirely by S3.
@@ -260,10 +264,20 @@ check the Actions tab — a pipeline run is probably holding it.
   pins **1.12**, so use a compatible local version to share the lock
 - **AWS credentials** — for local use, your AWS session must have access to the S3 state bucket (`aws-panella-bucket2`) and the target account; for CI, the workflow uses OIDC role assumption via `secrets.ARN`
 - An SSH key pair at `.ssh/terraform-key` (private) and `.ssh/terraform-key.pub` (public)
+- A `public_ip` file at the repository root with the CIDR allowed to SSH into the
+  public subnet (Bastion / Invasor)
 
 Generate the SSH key if you don't have one:
 ```bash
 ssh-keygen -t rsa -b 4096 -f .ssh/terraform-key -N ""
+```
+
+**`public_ip` file:** both `ACL_subnetA` and the `Bastion-Invasor` security group read
+this file (`file("public_ip")`) to know which source CIDR may open SSH. It is committed
+with `0.0.0.0/0` so the lab works out of the box — replace it with your own address for
+a tighter setup:
+```bash
+echo "$(curl -s https://checkip.amazonaws.com)/32" > public_ip
 ```
 
 **Local credentials:** set up with `aws configure` or `aws sso login`. The S3 backend
@@ -296,15 +310,27 @@ re-runs the Trivy gate and applies automatically.
 
 ## Security Scanning (Trivy)
 
-Every PR against `main` runs [Trivy](https://trivy.dev) in IaC (`config`) mode:
+Every PR against `main` — and every push to `main` — runs
+[Trivy](https://trivy.dev) in IaC (`config`) mode:
 
-- **Gate:** `CRITICAL,HIGH` findings fail the PR and block the `plan` job.
+- **Gate:** `CRITICAL,HIGH` findings fail the run and block the `plan`/`apply` job.
 - **Reporting:** results go as SARIF to **GitHub Security tab → Code scanning**
-  (filter by the PR branch).
+  (filter by the branch).
+- **Suppressions:** the scan runs with `TRIVY_IGNOREFILE: .trivyignore`.
 
-Known findings are intentional for this lab (bastion SG open to `0.0.0.0/0`,
-public subnets, no IMDSv2/EBS encryption) — hardening is tracked in the
-[ROADMAP](#roadmap).
+The checks currently suppressed in `.trivyignore` are the ones that are intentional
+for this lab:
+
+| AVD ID        | Finding                                    |
+|---------------|--------------------------------------------|
+| AVD-AWS-0104  | SG with unrestricted egress                |
+| AVD-AWS-0107  | SG allowing SSH from a public CIDR          |
+| AVD-AWS-0164  | Subnet with `map_public_ip_on_launch`       |
+| AVD-AWS-0131  | Unencrypted EBS root volume                 |
+| AVD-AWS-0028  | EC2 instance not enforcing IMDSv2           |
+
+Hardening for the last two (and for VPC Flow Logs, which is not suppressed) is
+tracked in the [ROADMAP](#roadmap).
 
 ---
 
@@ -417,8 +443,10 @@ IP and accepts traffic **only** from subnetB, so this jump path
   - [X] Route tables + associations for VPC2 subnets
   - [X] NACLs / security groups scoped to VPC2
   - [X] A second Server instance (`Server_2`) in VPC2
-  - [X] **Named Terraform outputs** (`outputs.tf`) — expose the Bastion / Invasor
-    public IPs and Server_1 private IP instead of reading them from the console
+  - [X] **Named Terraform outputs** (`outputs.tf`) — expose the public and private
+    IPs of every instance instead of reading them from the console
+  - [X] **Harden NACLs and security groups** — replace the `allow all` rules with
+    specific protocols and port ranges (TCP/22 + ephemeral)
   - [X] **VPC peering** between VPC1 and VPC2 (with routes so Server_1 ↔ Server_2 works)
   - [X] **State locking** — enable `use_lockfile` on the S3 backend
 
@@ -427,7 +455,7 @@ IP and accepts traffic **only** from subnetB, so this jump path
 ## ⏳ Planned
 
 ### Security hardening (from Trivy findings)
-> These findings are currently suppressed in `.trivyignore` (so the gate stays
+> Most of these findings are suppressed in `.trivyignore` (so the gate stays
 > meaningful for *unexpected* issues) and are tracked here to be **fixed** later —
 > removing each AVD from `.trivyignore` once the corresponding hardening lands.
 
@@ -435,10 +463,10 @@ IP and accepts traffic **only** from subnetB, so this jump path
   `aws_instance` (Trivy AVD-AWS-0028)
 - [ ] **EBS encryption** — `root_block_device { encrypted = true }`
   (Trivy AVD-AWS-0131)
-- [ ] **Narrow the Bastion security group** — restrict ingress from
-  `0.0.0.0/0` (all ports) to TCP/22, ideally from a known admin CIDR
-  (Trivy AVD-AWS-0107)
-- [ ] **VPC Flow Logs** (Trivy AVD-AWS-0178)
+- [ ] **VPC Flow Logs** (Trivy AVD-AWS-0178 — not suppressed)
+- [X] **Narrow the Bastion security group** — ingress restricted to TCP/22 from
+  the CIDR in the `public_ip` file instead of all traffic from `0.0.0.0/0`
+  (Trivy AVD-AWS-0107 — still suppressed while `public_ip` defaults to `0.0.0.0/0`)
 - [X] Add `.trivyignore` for the findings that are intentional in this lab
   (public subnets, etc.) so the gate stays meaningful
 
