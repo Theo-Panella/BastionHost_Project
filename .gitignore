@@ -6,3 +6,4 @@ terraform_files/*.lock.hcl
 .ssh
 *.lock.hcl
 tfplan*
+secret.*
