@@ -3,7 +3,10 @@ on:
   pull_request:
     branches:
       - main
-    
+
+env:
+  TF_VAR_ssh_key: ${{ secrets.SSH_KEY_EC2_AWS }}
+
 jobs:
   Trivy:
     runs-on: ubuntu-latest
@@ -49,14 +52,6 @@ jobs:
     steps:
       - name: "Checkout do código"
         uses: actions/checkout@v4
-
-      - name: "defining ssh credentials for ec2"
-        run: |
-          mkdir .ssh 
-          echo "${{ secrets.SSH_KEY_EC2_AWS_PRIVATE }}" > .ssh/terraform-key
-          echo "${{ secrets.SSH_KEY_EC2_AWS }}" > .ssh/terraform-key.pub
-          chmod 600 .ssh/terraform-key
-          chmod 644 .ssh/terraform-key.pub
 
       - name: "Configure AWS credentials"
         uses:  aws-actions/Configure-aws-credentials@v4

@@ -3,7 +3,7 @@ flowchart TD
     %% ===================== DESKTOP =====================
     subgraph DEV["💻 Developer Desktop"]
         direction TB
-        code["Edits Terraform files<br/>main.tf · variables.tf · terraform.tf · outputs.tf"]
+        code["Edits Terraform files<br/>Network.tf · Computer.tf · variables.tf<br/>terraform.tfvars · terraform.tf · outputs.tf"]
         commit["git commit"]
         push["git push origin main"]
         code --> commit --> push
@@ -61,12 +61,12 @@ flowchart TD
             snB["subnetB · 192.168.0.64/26<br/>Private"]
             snC["subnetC · 192.168.0.128/26<br/>Public"]
 
-            aclA["NACL ACL_subnetA<br/>allow 0.0.0.0/0"]
-            aclB["NACL ACL_subnetB<br/>allow A + allow VPC2 · deny C"]
-            aclC["NACL ACL_subnetC<br/>allow 0.0.0.0/0"]
+            aclA["NACL ACL_subnetA<br/>tcp/22 from admin_cidr<br/>allow B · deny C"]
+            aclB["NACL ACL_subnetB<br/>tcp/22 from A · allow VPC2 · deny C"]
+            aclC["NACL ACL_subnetC<br/>allow admin_cidr"]
 
-            sgBI["SG Bastion-Invasor<br/>all traffic 0.0.0.0/0"]
-            sgS1["SG Server_1<br/>subnetA + subnetA_VPC2"]
+            sgBI["SG Bastion-Invasor<br/>tcp/22 from admin_cidr<br/>+ ephemeral from subnetB"]
+            sgS1["SG Server_1<br/>tcp/22 from subnetA<br/>+ ephemeral from subnetA_VPC2"]
 
             bastion["EC2 Bastion<br/>subnetA · public"]
             invasor["EC2 Invasor<br/>subnetC · public"]
@@ -77,13 +77,13 @@ flowchart TD
             direction TB
             privrt2["Private Route Table VPC2"]
             snA2["subnetA_VPC2 · 172.18.0.0/26<br/>Private · no IGW"]
-            acl2["NACL subnetA_VPC2<br/>allow subnetB"]
-            sgS2["SG Server_2<br/>subnetB only"]
+            acl2["NACL subnetA_VPC2<br/>tcp/22 from subnetB"]
+            sgS2["SG Server_2<br/>tcp/22 from subnetB only"]
             server2["EC2 Server_2<br/>private"]
         end
 
         peering["🔗 VPC Peering Connection<br/>VPC1 ↔ VPC2 · auto_accept"]
-        keypair["aws_key_pair<br/>SSH Key (.pub)"]
+        keypair["aws_key_pair<br/>SSH Key ← var.ssh_key (sensitive)"]
     end
 
     %% ===================== OUTPUTS =====================
